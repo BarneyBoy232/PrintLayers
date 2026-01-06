@@ -29,7 +29,7 @@ function ThreeDViewer({ file, onClear }: { file: File, onClear: () => void }) {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5" />
           </svg>
         </div>
-        <h2 className="text-white text-2xl font-black italic tracking-tighter uppercase mb-2">{file.name}</h2>
+        <h2 className="text-white text-2xl font-bold mb-2">{file.name}</h2>
         <p className="text-gray-400 max-w-md mx-auto leading-relaxed">
           File successfully loaded. Ready to scale, rotate, and estimate print costs.
         </p>
@@ -75,6 +75,7 @@ export default function App() {
 
   const isInitialized = useRef(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const authListenerRef = useRef<any>(null);
 
   useEffect(() => {
     if (isInitialized.current) return;
@@ -108,10 +109,17 @@ export default function App() {
           setCurrentView('home');
         }
       });
-
-      return () => subscription.unsubscribe();
+      
+      authListenerRef.current = subscription;
     };
+    
     document.head.appendChild(script);
+
+    return () => {
+      if (authListenerRef.current) {
+        authListenerRef.current.unsubscribe();
+      }
+    };
   }, []);
 
   const handleEmailAuth = async (e: React.FormEvent) => {
@@ -136,7 +144,7 @@ export default function App() {
         if (error) throw error;
       }
     } catch (err: any) {
-      setAuthError(err.message);
+      setAuthError(err.message || "An error occurred during authentication.");
       setAuthSubmitting(false);
     }
   };
@@ -485,12 +493,6 @@ export default function App() {
           </div>
         )}
       </main>
-
-      <footer className="bg-white border-t border-gray-200 mt-auto py-10">
-        <div className="max-w-5xl mx-auto px-4 text-center text-xs text-gray-400 font-bold tracking-widest uppercase">
-          <p>&copy; 2025 PrintLayers Core</p>
-        </div>
-      </footer>
     </div>
   );
 }
