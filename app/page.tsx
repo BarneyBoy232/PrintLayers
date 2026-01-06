@@ -3,6 +3,12 @@
 import React, { useEffect, useState, useRef } from 'react';
 
 /**
+ * CONSTANTS
+ * Your email is now set as the primary Admin identifier.
+ */
+const ADMIN_EMAIL = 'ethan.barnacoat@gmail.com';
+
+/**
  * TYPES & INTERFACES
  */
 interface SupabaseUser {
@@ -17,42 +23,93 @@ interface CartItem {
   url: string;
 }
 
-type View = 'home' | 'search' | 'adjust' | 'store' | 'partner' | 'signin' | 'cart';
+type View = 'home' | 'search' | 'adjust' | 'store' | 'partner' | 'signin' | 'cart' | 'admin';
 
-// --- Integrated 3D Viewer Placeholder (Shows after upload) ---
+// --- Integrated 3D Viewer / Configurator ---
 function ThreeDViewer({ file, onClear }: { file: File, onClear: () => void }) {
+  const [weight, setWeight] = useState<number>(0);
+  const [material, setMaterial] = useState<string>('PLA');
+  const [showConfig, setShowConfig] = useState(false);
+
+  const calculateEstimate = () => {
+    const materialRate = material === 'PLA' ? 0.05 : 0.08; 
+    const baseFee = 5.00;
+    const total = (weight * materialRate) + baseFee;
+    return total.toFixed(2);
+  };
+
   return (
-    <div className="w-full h-[500px] bg-gray-900 rounded-[3rem] overflow-hidden relative border border-gray-800 shadow-2xl animate-in zoom-in-95 duration-500">
-      <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-12">
-        <div className="w-20 h-20 bg-emerald-500/20 rounded-full flex items-center justify-center mb-6 animate-pulse">
-          <svg className="w-10 h-10 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5" />
-          </svg>
+    <div className="w-full space-y-6 animate-in zoom-in-95 duration-500">
+      <div className="w-full h-[500px] bg-gray-900 rounded-[3rem] overflow-hidden relative border border-gray-800 shadow-2xl">
+        {!showConfig ? (
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-12">
+            <div className="w-20 h-20 bg-emerald-500/20 rounded-full flex items-center justify-center mb-6 animate-pulse">
+              <svg className="w-10 h-10 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5" />
+              </svg>
+            </div>
+            <h2 className="text-white text-2xl font-black italic tracking-tighter uppercase mb-2">{file.name}</h2>
+            <p className="text-gray-400 max-w-md mx-auto leading-relaxed">
+              File successfully loaded. Ready to scale, rotate, and estimate print costs.
+            </p>
+            <div className="mt-8 flex gap-4">
+              <button 
+                onClick={() => setShowConfig(true)}
+                className="bg-emerald-600 hover:bg-emerald-500 text-white px-8 py-3 rounded-xl font-bold transition-all shadow-lg shadow-emerald-900/20"
+              >
+                Configure Print
+              </button>
+              <button onClick={onClear} className="bg-white/5 hover:bg-white/10 text-white px-8 py-3 rounded-xl font-bold transition-all border border-white/10">
+                Clear File
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="absolute inset-0 p-8 flex flex-col md:flex-row gap-8 bg-gray-900/95 backdrop-blur-md">
+            <div className="flex-1 rounded-2xl bg-black/40 border border-white/5 flex items-center justify-center text-emerald-500 font-black italic">
+              3D PREVIEW ENGINE
+            </div>
+            <div className="w-full md:w-80 space-y-6">
+              <div className="space-y-4">
+                <h3 className="text-white font-black uppercase text-sm tracking-widest border-b border-white/10 pb-2">Print Config</h3>
+                <div>
+                  <label className="block text-[10px] font-black text-gray-500 uppercase mb-1">Material</label>
+                  <select value={material} onChange={(e) => setMaterial(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-lg p-2 text-white text-xs outline-none focus:border-emerald-500">
+                    <option value="PLA">PLA (Standard)</option>
+                    <option value="PETG">PETG (Durable)</option>
+                    <option value="ABS">ABS (Heat Resistant)</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-[10px] font-black text-gray-500 uppercase mb-1">Estimated Weight (g)</label>
+                  <input 
+                    type="number" 
+                    value={weight} 
+                    onChange={(e) => setWeight(Number(e.target.value))} 
+                    className="w-full bg-white/5 border border-white/10 rounded-lg p-2 text-white text-xs outline-none focus:border-emerald-500" 
+                  />
+                </div>
+              </div>
+              <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
+                <p className="text-[10px] font-black text-emerald-500 uppercase mb-1">Estimated Total</p>
+                <p className="text-2xl font-black text-white">${calculateEstimate()}</p>
+              </div>
+              <button className="w-full bg-emerald-600 text-white py-3 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-emerald-500 transition-all">
+                Add to Cart
+              </button>
+              <button onClick={() => setShowConfig(false)} className="w-full text-gray-500 font-bold text-[10px] uppercase">Back</button>
+            </div>
+          </div>
+        )}
+        <div className="absolute inset-0 pointer-events-none opacity-10" 
+             style={{ backgroundImage: 'radial-gradient(#10b981 1px, transparent 1px)', backgroundSize: '32px 32px' }}>
         </div>
-        <h2 className="text-white text-2xl font-bold mb-2">{file.name}</h2>
-        <p className="text-gray-400 max-w-md mx-auto leading-relaxed">
-          File successfully loaded. Ready to scale, rotate, and estimate print costs.
-        </p>
-        <div className="mt-8 flex gap-4">
-          <button className="bg-emerald-600 hover:bg-emerald-500 text-white px-8 py-3 rounded-xl font-bold transition-all shadow-lg shadow-emerald-900/20">
-            Configure Print
-          </button>
-          <button 
-            onClick={onClear}
-            className="bg-white/5 hover:bg-white/10 text-white px-8 py-3 rounded-xl font-bold transition-all border border-white/10"
-          >
-            Clear File
-          </button>
-        </div>
-      </div>
-      <div className="absolute inset-0 pointer-events-none opacity-10" 
-           style={{ backgroundImage: 'radial-gradient(#10b981 1px, transparent 1px)', backgroundSize: '32px 32px' }}>
       </div>
     </div>
   );
 }
 
-// --- Main Application Component ---
+// --- Main Application ---
 export default function App() {
   const [supabase, setSupabase] = useState<any>(null);
   const [user, setUser] = useState<SupabaseUser | null>(null);
@@ -60,13 +117,11 @@ export default function App() {
   const [currentView, setCurrentView] = useState<View>('home');
   const [authError, setAuthError] = useState<string | null>(null);
   
-  // App Logic State
   const [cart, setCart] = useState<CartItem[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [importUrl, setImportUrl] = useState('');
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
 
-  // Auth Form State
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -105,35 +160,20 @@ export default function App() {
           setAuthError(null);
           setCurrentView('home');
         }
-        if (event === 'SIGNED_OUT') {
-          setCurrentView('home');
-        }
+        if (event === 'SIGNED_OUT') setCurrentView('home');
       });
-      
       authListenerRef.current = subscription;
     };
-    
     document.head.appendChild(script);
-
-    return () => {
-      if (authListenerRef.current) {
-        authListenerRef.current.unsubscribe();
-      }
-    };
+    return () => { if (authListenerRef.current) authListenerRef.current.unsubscribe(); };
   }, []);
 
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!supabase) return;
-
-    if (isSignUpMode && password !== confirmPassword) {
-      setAuthError("Passwords do not match.");
-      return;
-    }
-
+    if (isSignUpMode && password !== confirmPassword) { setAuthError("Passwords do not match."); return; }
     setAuthSubmitting(true);
     setAuthError(null);
-
     try {
       if (isSignUpMode) {
         const { error } = await supabase.auth.signUp({ email, password });
@@ -143,41 +183,28 @@ export default function App() {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
       }
-    } catch (err: any) {
-      setAuthError(err.message || "An error occurred during authentication.");
-      setAuthSubmitting(false);
-    }
+    } catch (err: any) { setAuthError(err.message || "Auth error occurred."); setAuthSubmitting(false); }
   };
 
   const handleOAuthSignIn = async () => {
     if (!supabase) return;
-    setAuthError(null);
     setAuthSubmitting(true);
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
-        options: { 
-          redirectTo: window.location.origin,
-          queryParams: {
-            access_type: 'offline',
-            prompt: 'consent',
-          }
-        }
+        options: { redirectTo: window.location.origin, queryParams: { access_type: 'offline', prompt: 'consent' } }
       });
       if (error) throw error;
-    } catch (err: any) {
-      console.error("Sign in error:", err);
-      setAuthError(err.message || "OAuth failed.");
-      setAuthSubmitting(false);
-    }
+    } catch (err: any) { setAuthError(err.message || "Google OAuth failed."); setAuthSubmitting(false); }
   };
 
-  const handleExternalSearch = (platform: 'maker' | 'thing') => {
-    if (!searchQuery) return;
-    const url = platform === 'maker' 
-      ? `https://makerworld.com/en/search/models?keyword=${encodeURIComponent(searchQuery)}`
-      : `https://www.thingiverse.com/search?q=${encodeURIComponent(searchQuery)}`;
-    window.open(url, '_blank');
+  const navigateTo = (view: View) => {
+    if (view === 'admin' && user?.email !== ADMIN_EMAIL) {
+      setAuthError("Access Denied: Admins Only.");
+      return;
+    }
+    if (!user && view !== 'home') { setCurrentView('signin'); return; }
+    setCurrentView(view);
   };
 
   const handleImport = (e: React.FormEvent) => {
@@ -185,19 +212,10 @@ export default function App() {
     if (!importUrl) return;
     let name = "Imported Model";
     try {
-      const urlObj = new URL(importUrl);
-      const pathParts = urlObj.pathname.split('/').filter(p => p);
-      if (pathParts.length > 0) {
-        name = pathParts[pathParts.length - 1].replace(/-/g, ' ');
-      }
+      const pathParts = new URL(importUrl).pathname.split('/').filter(p => p);
+      if (pathParts.length > 0) name = pathParts[pathParts.length - 1].replace(/-/g, ' ');
     } catch (e) {}
-    const newItem: CartItem = {
-      id: Math.random().toString(36).substr(2, 9),
-      name: name,
-      source: importUrl.includes('makerworld') ? 'MakerWorld' : 'Thingiverse',
-      url: importUrl
-    };
-    setCart([...cart, newItem]);
+    setCart([...cart, { id: Math.random().toString(36).substr(2, 9), name, source: importUrl.includes('makerworld') ? 'MakerWorld' : 'Thingiverse', url: importUrl }]);
     setImportUrl('');
     setCurrentView('cart');
   };
@@ -207,48 +225,27 @@ export default function App() {
     if (file) setUploadedFile(file);
   };
 
-  const navigateTo = (view: View) => {
-    if (!user && view !== 'home') {
-      setCurrentView('signin');
-      return;
-    }
-    setCurrentView(view);
-  };
-
-  if (loading) return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div>
-    </div>
-  );
+  if (loading) return <div className="min-h-screen flex items-center justify-center bg-gray-50"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div></div>;
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans text-gray-900 antialiased flex flex-col">
-      {/* NAVIGATION */}
       <nav className="bg-white border-b border-gray-200 sticky top-0 z-50 h-14 flex-shrink-0">
         <div className="max-w-5xl mx-auto px-4 h-full flex items-center justify-between relative w-full">
-          <button onClick={() => setCurrentView('home')} className="flex items-center gap-2 z-10 group">
-            <span className="font-black text-xl tracking-tighter text-emerald-600">PrintLayers</span>
-          </button>
-
+          <button onClick={() => setCurrentView('home')} className="flex items-center gap-2 z-10 group"><span className="font-black text-xl tracking-tighter text-emerald-600">PrintLayers</span></button>
+          
           <div className="absolute left-1/2 transform -translate-x-1/2 text-sm font-semibold text-gray-400 whitespace-nowrap hidden sm:block uppercase tracking-widest">
-            {currentView === 'home' ? '3D Printing Service' : currentView}
+            {currentView}
           </div>
 
           <div className="flex gap-6 text-sm font-medium text-gray-600 z-10 items-center">
-            {cart.length > 0 && (
-              <button onClick={() => setCurrentView('cart')} className="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-[10px] font-black">
-                CART: {cart.length}
-              </button>
+            {user?.email === ADMIN_EMAIL && (
+              <button onClick={() => setCurrentView('admin')} className="text-purple-600 font-black text-[10px] uppercase tracking-widest border-2 border-purple-100 px-2 py-1 rounded-lg hover:bg-purple-50 transition-all">Admin</button>
             )}
+            {cart.length > 0 && <button onClick={() => setCurrentView('cart')} className="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-[10px] font-black">CART: {cart.length}</button>}
             {user ? (
-              <div className="flex items-center gap-4">
-                <span className="text-gray-400 text-xs hidden md:inline tracking-tight font-bold">{user.email}</span>
-                <button onClick={() => supabase.auth.signOut()} className="text-gray-400 hover:text-red-600 transition-colors text-xs font-black uppercase tracking-wider">Sign Out</button>
-              </div>
+              <button onClick={() => supabase.auth.signOut()} className="text-gray-400 hover:text-red-600 transition-colors text-xs font-black uppercase tracking-wider">Sign Out</button>
             ) : (
-              currentView !== 'signin' && (
-                <button onClick={() => setCurrentView('signin')} className="text-emerald-600 font-black hover:text-emerald-700 transition-colors uppercase tracking-wider text-xs">Sign In</button>
-              )
+              currentView !== 'signin' && <button onClick={() => setCurrentView('signin')} className="text-emerald-600 font-black hover:text-emerald-700 transition-colors uppercase tracking-wider text-xs">Sign In</button>
             )}
           </div>
         </div>
@@ -260,198 +257,90 @@ export default function App() {
           <div className="flex-grow flex items-center justify-center py-12">
             <div className="w-full max-w-md bg-white p-8 rounded-[2.5rem] shadow-2xl border border-gray-100">
                <div className="text-center">
-                  <h1 className="text-3xl font-black text-gray-900 mb-2 leading-tight">
-                    {isSignUpMode ? 'Create Account' : 'Welcome Back'}
-                  </h1>
-                  <p className="text-gray-400 font-bold text-xs uppercase tracking-widest mb-8">
-                    {isSignUpMode ? 'Join the PrintLayers network' : 'Enter your details to continue'}
-                  </p>
-
-                  {authError && (
-                    <div className="mb-6 p-4 bg-red-50 border border-red-100 text-red-600 text-xs font-bold rounded-xl">
-                      {authError}
-                    </div>
-                  )}
-
+                  <h1 className="text-3xl font-black text-gray-900 mb-2 leading-tight">{isSignUpMode ? 'Create Account' : 'Welcome Back'}</h1>
+                  <p className="text-gray-400 font-bold text-xs uppercase tracking-widest mb-8">{isSignUpMode ? 'Join the network' : 'Enter details to continue'}</p>
+                  
+                  {authError && <div className="mb-6 p-4 bg-red-50 border border-red-100 text-red-600 text-xs font-bold rounded-xl">{String(authError)}</div>}
+                  
                   <form onSubmit={handleEmailAuth} className="space-y-4 text-left">
-                    <input 
-                      type="email" 
-                      placeholder="Email Address" 
-                      required 
-                      className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-100 outline-none focus:border-emerald-500 font-medium text-sm transition-all" 
-                      value={email} 
-                      onChange={e => setEmail(e.target.value)} 
-                    />
-                    <input 
-                      type="password" 
-                      placeholder="Password" 
-                      required 
-                      className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-100 outline-none focus:border-emerald-500 font-medium text-sm transition-all" 
-                      value={password} 
-                      onChange={e => setPassword(e.target.value)} 
-                    />
-                    
-                    {isSignUpMode && (
-                      <input 
-                        type="password" 
-                        placeholder="Confirm Password" 
-                        required 
-                        className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-100 outline-none focus:border-emerald-500 font-medium text-sm transition-all animate-in fade-in slide-in-from-top-2" 
-                        value={confirmPassword} 
-                        onChange={e => setConfirmPassword(e.target.value)} 
-                      />
-                    )}
-
-                    <button 
-                      type="submit" 
-                      disabled={authSubmitting} 
-                      className="w-full bg-emerald-600 text-white py-3.5 rounded-2xl font-black shadow-lg hover:bg-emerald-500 transition-all uppercase tracking-widest text-xs disabled:opacity-50 active:scale-[0.98]"
-                    >
-                      {authSubmitting ? 'Processing...' : (isSignUpMode ? 'Sign Up' : 'Sign In')}
-                    </button>
+                    <input type="email" placeholder="Email" required className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-100 outline-none focus:border-emerald-500 text-sm" value={email} onChange={e => setEmail(e.target.value)} />
+                    <input type="password" placeholder="Password" required className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-100 outline-none focus:border-emerald-500 text-sm" value={password} onChange={e => setPassword(e.target.value)} />
+                    {isSignUpMode && <input type="password" placeholder="Confirm Password" required className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-100 outline-none focus:border-emerald-500 text-sm" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} />}
+                    <button type="submit" disabled={authSubmitting} className="w-full bg-emerald-600 text-white py-3.5 rounded-2xl font-black shadow-lg hover:bg-emerald-500 transition-all uppercase tracking-widest text-xs disabled:opacity-50 active:scale-95">{authSubmitting ? '...' : (isSignUpMode ? 'Sign Up' : 'Sign In')}</button>
                   </form>
 
-                  <div className="my-8 flex items-center gap-4 text-gray-300">
-                    <div className="h-px bg-gray-100 flex-grow"></div>
-                    <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Or continue with</span>
-                    <div className="h-px bg-gray-100 flex-grow"></div>
-                  </div>
-
-                  <button 
-                    onClick={handleOAuthSignIn}
-                    disabled={authSubmitting}
-                    className="w-full flex items-center justify-center gap-3 bg-white border-2 border-gray-100 py-3.5 px-4 rounded-2xl font-bold text-gray-700 hover:bg-gray-50 transition-all active:scale-[0.98] disabled:opacity-50 shadow-sm"
-                  >
-                    <svg className="w-5 h-5" viewBox="0 0 48 48">
-                      <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-                      <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-                      <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
-                      <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-                      <path fill="none" d="M0 0h48v48H0z"/>
-                    </svg>
-                    Google
-                  </button>
-
-                  <div className="mt-8 pt-6 border-t border-gray-50">
-                    <button 
-                      onClick={() => { setIsSignUpMode(!isSignUpMode); setAuthError(null); }} 
-                      className="text-xs font-black text-emerald-600 uppercase tracking-wider hover:text-emerald-700 transition-colors"
-                    >
-                      {isSignUpMode ? 'Already have an account? Sign In' : "Don't have an account? Sign Up"}
-                    </button>
-                  </div>
+                  <div className="my-8 flex items-center gap-4 text-gray-200"><div className="h-px bg-gray-100 flex-grow"></div><span className="text-[10px] font-black uppercase text-gray-400">Or continue with</span><div className="h-px bg-gray-100 flex-grow"></div></div>
                   
-                  <button onClick={() => setCurrentView('home')} className="block mx-auto text-gray-400 font-bold text-xs uppercase tracking-widest pt-4 hover:text-emerald-600 transition-colors">Return Home</button>
+                  <button onClick={handleOAuthSignIn} disabled={authSubmitting} className="w-full flex items-center justify-center gap-3 bg-white border-2 border-gray-100 py-3.5 rounded-2xl font-bold text-gray-700 hover:bg-gray-50 transition-all shadow-sm active:scale-95">
+                    <svg className="w-5 h-5" viewBox="0 0 48 48">
+                      <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/>
+                    </svg>Google
+                  </button>
+                  <div className="mt-8 pt-6 border-t border-gray-50"><button onClick={() => setIsSignUpMode(!isSignUpMode)} className="text-xs font-black text-emerald-600 uppercase tracking-wider transition-colors hover:text-emerald-700">{isSignUpMode ? 'Back to Sign In' : "Join Network"}</button></div>
                </div>
             </div>
           </div>
         )}
 
-        {/* HOME VIEW - EXACTLY AS PROVIDED */}
         {currentView === 'home' && (
           <div className="space-y-10 animate-in fade-in duration-500">
             <div className="grid md:grid-cols-3 gap-6 items-stretch">
-              <div className="flex flex-col bg-emerald-600 p-6 rounded-3xl shadow-lg border border-emerald-700 relative overflow-hidden text-white group cursor-pointer hover:-translate-y-1 transition-all" onClick={() => navigateTo('search')}>
-                <div className="relative z-10 flex flex-col h-full">
-                  <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center mb-4 text-white">
-                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                  </div>
-                  <h3 className="font-black text-xl mb-2 text-white">Find Files</h3>
-                  <p className="text-sm text-emerald-50 mb-6 leading-relaxed opacity-90">Search MakerWorld & Thingiverse.</p>
-                  <div className="mt-auto">
-                    <button className="w-full bg-white text-emerald-700 py-2.5 rounded-xl text-sm font-black transition-colors">{user ? 'Search Library' : 'Sign in to Search'}</button>
-                  </div>
-                </div>
+              <div className="flex flex-col bg-emerald-600 p-6 rounded-3xl shadow-lg border border-emerald-700 text-white group cursor-pointer hover:-translate-y-1 transition-all" onClick={() => navigateTo('search')}>
+                <h3 className="font-black text-xl mb-2">Find Files</h3>
+                <p className="text-sm text-emerald-50 mb-6 opacity-90 leading-relaxed">Search MakerWorld & Thingiverse.</p>
+                <button className="mt-auto w-full bg-white text-emerald-700 py-2.5 rounded-xl text-sm font-black transition-colors">Search Library</button>
               </div>
-
-              <div className="flex flex-col bg-white p-6 rounded-3xl shadow-sm border border-gray-200 hover:border-emerald-500 transition-all group cursor-pointer hover:-translate-y-1" onClick={() => navigateTo('adjust')}>
-                <div className="w-10 h-10 bg-gray-100 text-gray-600 rounded-xl flex items-center justify-center mb-4"><svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg></div>
+              <div className="flex flex-col bg-white p-6 rounded-3xl shadow-sm border border-gray-200 hover:border-emerald-500 group cursor-pointer hover:-translate-y-1 transition-all" onClick={() => navigateTo('adjust')}>
                 <h3 className="font-black text-xl text-gray-900 mb-2">Upload & Print</h3>
                 <p className="text-sm text-gray-500 mb-6 leading-relaxed">Configure materials and scale for pricing.</p>
-                <div className="mt-auto">
-                  <button className="w-full bg-gray-900 text-white py-2.5 rounded-xl text-sm font-black hover:bg-gray-800 transition-colors">{user ? 'Start Quote' : 'Sign in to Quote'}</button>
-                </div>
+                <button className="mt-auto w-full bg-gray-900 text-white py-2.5 rounded-xl text-sm font-black hover:bg-gray-800 transition-colors">Start Quote</button>
               </div>
-
-              <div className="flex flex-col bg-white p-6 rounded-3xl shadow-sm border border-gray-200 hover:border-emerald-500 transition-all group cursor-pointer hover:-translate-y-1" onClick={() => navigateTo('store')}>
-                <div className="w-10 h-10 bg-purple-50 text-purple-600 rounded-xl flex items-center justify-center mb-4"><svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg></div>
+              <div className="flex flex-col bg-white p-6 rounded-3xl shadow-sm border border-gray-200 hover:border-emerald-500 group cursor-pointer hover:-translate-y-1 transition-all" onClick={() => navigateTo('cart')}>
                 <h3 className="font-black text-xl text-gray-900 mb-2">Parts Store</h3>
                 <p className="text-sm text-gray-500 mb-6 leading-relaxed">Browse ready-to-print utility parts.</p>
-                <div className="mt-auto">
-                  <button className="w-full bg-white border-2 border-gray-100 text-gray-700 py-2 rounded-xl text-sm font-black hover:bg-gray-50 transition-all">{user ? 'Browse Shop' : 'Sign in to Browse'}</button>
-                </div>
+                <button className="mt-auto w-full bg-white border-2 border-gray-100 text-gray-700 py-2 rounded-xl text-sm font-black hover:bg-gray-50 transition-all">Browse Shop</button>
               </div>
             </div>
-
             <div className="bg-gray-900 rounded-[2rem] p-8 text-white flex flex-col md:flex-row items-center justify-between gap-8 shadow-2xl relative overflow-hidden text-center md:text-left">
-              <div>
-                <h3 className="font-black text-2xl mb-3">Own a printer? Join the network.</h3>
-                <p className="text-gray-400 text-sm max-w-lg leading-relaxed">Add your machine to our manufacturing pool. Receive verified jobs and earn money.</p>
-              </div>
-              <button onClick={() => navigateTo('partner')} className="whitespace-nowrap bg-emerald-600 text-white px-8 py-4 rounded-2xl font-black text-sm hover:bg-emerald-50 transition-all">{user ? 'Register Printer' : 'Sign in to Register'}</button>
+              <div><h3 className="font-black text-2xl mb-3">Own a printer? Join the network.</h3><p className="text-gray-400 text-sm max-w-lg leading-relaxed">Add your machine to our manufacturing pool. Receive verified jobs and earn money.</p></div>
+              <button onClick={() => navigateTo('partner')} className="whitespace-nowrap bg-emerald-600 text-white px-8 py-4 rounded-2xl font-black text-sm hover:bg-emerald-50 transition-all">Register Printer</button>
             </div>
           </div>
         )}
 
-        {/* SEARCH VIEW - CENTERED FIND FILES HEADER */}
         {currentView === 'search' && (
           <div className="max-w-4xl mx-auto w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <header className="text-center relative">
-              <button onClick={() => setCurrentView('home')} className="absolute left-0 top-1/2 -translate-y-1/2 text-xs font-black text-gray-400 hover:text-emerald-600 flex items-center gap-2">&larr; BACK</button>
-              <h2 className="text-4xl font-black italic tracking-tighter uppercase">Find Files</h2>
-            </header>
-            
+            <header className="text-center relative"><button onClick={() => setCurrentView('home')} className="absolute left-0 top-1/2 -translate-y-1/2 text-xs font-black text-gray-400 hover:text-emerald-600 transition-colors">&larr; BACK</button><h2 className="text-4xl font-black italic tracking-tighter uppercase">Find Files</h2></header>
             <div className="grid md:grid-cols-2 gap-8">
               <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm space-y-6 flex flex-col justify-center text-center">
-                <div className="space-y-2">
-                  <h3 className="font-black text-lg">1. Browse Repositories</h3>
-                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Search thousands of free STL files</p>
-                </div>
+                <h3 className="font-black text-lg">1. Browse Repositories</h3>
                 <input type="text" placeholder="e.g. GoPro Mount..." className="w-full px-6 py-4 rounded-2xl bg-gray-50 border border-gray-100 outline-none font-bold text-center" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
                 <div className="flex gap-4">
-                  <button onClick={() => handleExternalSearch('maker')} className="flex-1 p-4 bg-emerald-50 border border-emerald-100 rounded-2xl font-black text-emerald-700 text-[10px] uppercase tracking-widest transition-all hover:bg-emerald-100">MakerWorld</button>
-                  <button onClick={() => handleExternalSearch('thing')} className="flex-1 p-4 bg-blue-50 border border-blue-100 rounded-2xl font-black text-blue-700 text-[10px] uppercase tracking-widest transition-all hover:bg-blue-100">Thingiverse</button>
+                  <button onClick={() => window.open(`https://makerworld.com/en/search/models?keyword=${encodeURIComponent(searchQuery)}`)} className="flex-1 p-4 bg-emerald-50 text-emerald-700 font-black text-[10px] uppercase tracking-widest rounded-2xl hover:bg-emerald-100 transition-all">MakerWorld</button>
+                  <button onClick={() => window.open(`https://www.thingiverse.com/search?q=${encodeURIComponent(searchQuery)}`)} className="flex-1 p-4 bg-blue-50 text-blue-700 font-black text-[10px] uppercase tracking-widest rounded-2xl hover:bg-blue-100 transition-all">Thingiverse</button>
                 </div>
               </div>
-
               <div className="bg-emerald-600 p-8 rounded-[2.5rem] shadow-xl text-white space-y-6 text-center">
-                <div className="space-y-2">
-                  <h3 className="font-black text-lg">2. Add to Cart</h3>
-                  <p className="text-[10px] text-emerald-100 font-bold uppercase tracking-wider">Paste the URL from the search</p>
-                </div>
+                <h3 className="font-black text-lg">2. Add to Cart</h3>
                 <form onSubmit={handleImport} className="space-y-4">
-                  <input type="url" required placeholder="https://..." className="w-full px-6 py-4 rounded-2xl bg-white/10 border border-white/20 outline-none font-bold text-sm text-white placeholder:text-white/40 text-center" value={importUrl} onChange={e => setImportUrl(e.target.value)} />
-                  <button type="submit" className="w-full bg-white text-emerald-700 py-4 rounded-2xl font-black uppercase tracking-widest text-xs shadow-lg active:scale-95 transition-all">ADD TO CART</button>
+                  <input type="url" required placeholder="Paste URL..." className="w-full px-6 py-4 rounded-2xl bg-white/10 border border-white/20 outline-none font-bold text-sm text-center placeholder:text-white/40" value={importUrl} onChange={e => setImportUrl(e.target.value)} />
+                  <button type="submit" className="w-full bg-white text-emerald-700 py-4 rounded-2xl font-black uppercase tracking-widest text-xs active:scale-95 transition-all">ADD TO CART</button>
                 </form>
               </div>
             </div>
           </div>
         )}
 
-        {/* ADJUST VIEW - UPDATED UPLOAD AREA */}
         {currentView === 'adjust' && (
           <div className="max-w-4xl mx-auto w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <header className="flex items-center justify-between">
-              <button onClick={() => { setUploadedFile(null); setCurrentView('home'); }} className="text-xs font-black text-gray-400 hover:text-emerald-600 flex items-center gap-2">&larr; BACK</button>
-              <h2 className="text-4xl font-black italic tracking-tighter uppercase">Upload & Print</h2>
-            </header>
-
+            <header className="flex items-center justify-between"><button onClick={() => { setUploadedFile(null); setCurrentView('home'); }} className="text-xs font-black text-gray-400 hover:text-emerald-600 transition-colors">&larr; BACK</button><h2 className="text-4xl font-black italic tracking-tighter uppercase">Upload & Print</h2></header>
             {!uploadedFile ? (
-              <div 
-                onClick={() => fileInputRef.current?.click()}
-                className="group w-full min-h-[500px] border-4 border-dashed border-gray-200 rounded-[3rem] bg-white flex flex-col items-center justify-center p-20 text-center cursor-pointer hover:border-emerald-500/50 hover:bg-emerald-50/20 transition-all duration-500"
-              >
+              <div onClick={() => fileInputRef.current?.click()} className="group w-full min-h-[500px] border-4 border-dashed border-gray-200 rounded-[3rem] bg-white flex flex-col items-center justify-center p-20 text-center cursor-pointer hover:border-emerald-500/50 transition-all duration-500">
                 <input type="file" ref={fileInputRef} className="hidden" accept=".stl,.3mf,.step,.stp" onChange={handleFileUpload} />
-                <div className="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center mb-8 border border-gray-100 group-hover:scale-110 group-hover:bg-emerald-100 transition-all shadow-sm">
-                  <svg className="w-10 h-10 text-gray-300 group-hover:text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
-                </div>
+                <div className="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center mb-8 border border-gray-100 group-hover:scale-110 group-hover:bg-emerald-100 transition-all shadow-sm"><svg className="w-10 h-10 text-gray-300 group-hover:text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg></div>
                 <h3 className="text-2xl font-black text-gray-900 mb-2 uppercase tracking-tighter italic">Drop 3D File Here</h3>
-                <p className="text-gray-400 font-bold mb-8">Select a model from your machine to begin instant configuration.</p>
-                <div className="flex gap-4">
-                  {['STL', '3MF', 'STEP'].map(ext => (
-                    <span key={ext} className="px-5 py-2 bg-gray-100 text-gray-500 text-[10px] font-black rounded-lg tracking-widest">{ext}</span>
-                  ))}
-                </div>
+                <p className="text-gray-400 font-bold mb-8">Select STL, 3MF, or STEP to begin configuration.</p>
+                <div className="flex gap-4">{['STL', '3MF', 'STEP'].map(ext => <span key={ext} className="px-5 py-2 bg-gray-100 text-gray-500 text-[10px] font-black rounded-lg tracking-widest uppercase">{ext}</span>)}</div>
               </div>
             ) : (
               <ThreeDViewer file={uploadedFile} onClear={() => setUploadedFile(null)} />
@@ -459,33 +348,35 @@ export default function App() {
           </div>
         )}
 
-        {/* CART VIEW */}
+        {currentView === 'admin' && (
+          <div className="max-w-4xl mx-auto w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <header className="text-center relative">
+              <button onClick={() => setCurrentView('home')} className="absolute left-0 top-1/2 -translate-y-1/2 text-xs font-black text-gray-400 hover:text-emerald-600 transition-colors">&larr; BACK</button>
+              <h2 className="text-4xl font-black italic tracking-tighter uppercase text-purple-600">Admin Console</h2>
+            </header>
+            <div className="bg-white rounded-[2.5rem] border-2 border-purple-100 p-8">
+              <h3 className="font-black uppercase text-xs tracking-widest text-purple-400 mb-4 text-center">Live Business Overview</h3>
+              <div className="grid grid-cols-3 gap-4 mb-8">
+                <div className="bg-purple-50 p-6 rounded-2xl text-center"><p className="text-[10px] font-black uppercase text-purple-400">Total Sales</p><p className="text-2xl font-black text-purple-700">$0.00</p></div>
+                <div className="bg-purple-50 p-6 rounded-2xl text-center"><p className="text-[10px] font-black uppercase text-purple-400">Active Jobs</p><p className="text-2xl font-black text-purple-700">0</p></div>
+                <div className="bg-purple-50 p-6 rounded-2xl text-center"><p className="text-[10px] font-black uppercase text-purple-400">Partners</p><p className="text-2xl font-black text-purple-700">1</p></div>
+              </div>
+              <p className="text-center text-gray-400 font-bold italic text-sm">Row Level Security (RLS) is active. No orders to display yet.</p>
+            </div>
+          </div>
+        )}
+
         {currentView === 'cart' && (
           <div className="max-w-3xl mx-auto w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <header className="flex items-center justify-between">
-              <button onClick={() => setCurrentView('home')} className="text-xs font-black text-gray-400 hover:text-emerald-600 flex items-center gap-2">&larr; DASHBOARD</button>
-              <h2 className="text-4xl font-black italic tracking-tighter uppercase text-right">Cart</h2>
-            </header>
-            
+            <header className="flex items-center justify-between"><button onClick={() => setCurrentView('home')} className="text-xs font-black text-gray-400 hover:text-emerald-600 transition-colors">&larr; BACK</button><h2 className="text-4xl font-black italic tracking-tighter uppercase text-right">Cart</h2></header>
             {cart.length === 0 ? (
-              <div className="bg-white rounded-[3rem] p-20 text-center border border-gray-100 shadow-sm">
-                <p className="text-gray-400 font-bold">Your cart is empty.</p>
-                <button onClick={() => setCurrentView('search')} className="mt-4 text-emerald-600 font-black text-xs uppercase tracking-widest border-b-2 border-emerald-500">Find Models</button>
-              </div>
+              <div className="bg-white rounded-[3rem] p-20 text-center border border-gray-100 shadow-sm"><p className="text-gray-400 font-bold">Your cart is empty.</p></div>
             ) : (
               <div className="space-y-3">
                 {cart.map(item => (
                   <div key={item.id} className="bg-white p-6 rounded-3xl border border-gray-100 flex items-center justify-between shadow-sm hover:border-emerald-500/40 transition-colors">
-                    <div>
-                      <h4 className="font-black text-gray-900">{item.name}</h4>
-                      <span className="text-[10px] font-black text-emerald-600 tracking-widest uppercase">{item.source}</span>
-                    </div>
-                    <div className="flex gap-2">
-                       <button onClick={() => setCurrentView('adjust')} className="bg-gray-900 text-white px-5 py-2 rounded-xl font-black text-xs uppercase tracking-widest">Adjust</button>
-                       <button onClick={() => setCart(cart.filter(i => i.id !== item.id))} className="p-2 text-gray-300 hover:text-red-500 transition-colors">
-                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                      </button>
-                    </div>
+                    <div><h4 className="font-black text-gray-900">{item.name}</h4><span className="text-[10px] font-black text-emerald-600 tracking-widest uppercase">{item.source}</span></div>
+                    <div className="flex gap-2"><button onClick={() => setCurrentView('adjust')} className="bg-gray-900 text-white px-5 py-2 rounded-xl font-black text-xs uppercase tracking-widest active:scale-95 transition-all">Adjust</button><button onClick={() => setCart(cart.filter(i => i.id !== item.id))} className="p-2 text-gray-300 hover:text-red-500 transition-colors"><svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button></div>
                   </div>
                 ))}
               </div>
