@@ -20,14 +20,17 @@ interface CartItem {
   id: string;
   name: string;
   source: string;
-  url: string;
+  url?: string;
+  price: string;
+  material: string;
+  weight: number;
 }
 
 type View = 'home' | 'search' | 'adjust' | 'store' | 'partner' | 'signin' | 'cart' | 'admin';
 
 // --- Integrated 3D Viewer / Configurator ---
-function ThreeDViewer({ file, onClear }: { file: File, onClear: () => void }) {
-  const [weight, setWeight] = useState<number>(0);
+function ThreeDViewer({ file, onClear, onAddToCart }: { file: File, onClear: () => void, onAddToCart: (config: { price: string, material: string, weight: number }) => void }) {
+  const [weight, setWeight] = useState<number>(10);
   const [material, setMaterial] = useState<string>('PLA');
   const [showConfig, setShowConfig] = useState(false);
 
@@ -36,6 +39,14 @@ function ThreeDViewer({ file, onClear }: { file: File, onClear: () => void }) {
     const baseFee = 5.00;
     const total = (weight * materialRate) + baseFee;
     return total.toFixed(2);
+  };
+
+  const handleAdd = () => {
+    onAddToCart({
+      price: calculateEstimate(),
+      material,
+      weight
+    });
   };
 
   return (
@@ -71,7 +82,10 @@ function ThreeDViewer({ file, onClear }: { file: File, onClear: () => void }) {
             </div>
             <div className="w-full md:w-80 space-y-6">
               <div className="space-y-4">
-                <h3 className="text-white font-black uppercase text-sm tracking-widest border-b border-white/10 pb-2">Print Config</h3>
+                <div className="flex items-center justify-between border-b border-white/10 pb-2">
+                  <h3 className="text-white font-black uppercase text-sm tracking-widest">Print Config</h3>
+                  <span className="text-[10px] text-emerald-500 font-black bg-emerald-500/10 px-2 py-0.5 rounded">LIVE</span>
+                </div>
                 <div>
                   <label className="block text-[10px] font-black text-gray-500 uppercase mb-1">Material</label>
                   <select value={material} onChange={(e) => setMaterial(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-lg p-2 text-white text-xs outline-none focus:border-emerald-500">
@@ -94,10 +108,13 @@ function ThreeDViewer({ file, onClear }: { file: File, onClear: () => void }) {
                 <p className="text-[10px] font-black text-emerald-500 uppercase mb-1">Estimated Total</p>
                 <p className="text-2xl font-black text-white">${calculateEstimate()}</p>
               </div>
-              <button className="w-full bg-emerald-600 text-white py-3 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-emerald-500 transition-all">
+              <button 
+                onClick={handleAdd}
+                className="w-full bg-emerald-600 text-white py-3 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-emerald-500 transition-all shadow-lg active:scale-95"
+              >
                 Add to Cart
               </button>
-              <button onClick={() => setShowConfig(false)} className="w-full text-gray-500 font-bold text-[10px] uppercase">Back</button>
+              <button onClick={() => setShowConfig(false)} className="w-full text-gray-500 font-bold text-[10px] uppercase hover:text-white transition-colors">Back</button>
             </div>
           </div>
         )}
@@ -215,7 +232,17 @@ export default function App() {
       const pathParts = new URL(importUrl).pathname.split('/').filter(p => p);
       if (pathParts.length > 0) name = pathParts[pathParts.length - 1].replace(/-/g, ' ');
     } catch (e) {}
-    setCart([...cart, { id: Math.random().toString(36).substr(2, 9), name, source: importUrl.includes('makerworld') ? 'MakerWorld' : 'Thingiverse', url: importUrl }]);
+    
+    // Add external model to cart with a base configuration
+    setCart([...cart, { 
+      id: Math.random().toString(36).substr(2, 9), 
+      name, 
+      source: importUrl.includes('makerworld') ? 'MakerWorld' : 'Thingiverse', 
+      url: importUrl,
+      price: '5.00',
+      material: 'PLA',
+      weight: 0
+    }]);
     setImportUrl('');
     setCurrentView('cart');
   };
@@ -225,15 +252,30 @@ export default function App() {
     if (file) setUploadedFile(file);
   };
 
+  const handleAddToCartFromConfig = (config: { price: string, material: string, weight: number }) => {
+    if (!uploadedFile) return;
+    const newItem: CartItem = {
+      id: Math.random().toString(36).substr(2, 9),
+      name: uploadedFile.name,
+      source: 'Direct Upload',
+      price: config.price,
+      material: config.material,
+      weight: config.weight
+    };
+    setCart([...cart, newItem]);
+    setUploadedFile(null); // Reset for next upload
+    setCurrentView('cart');
+  };
+
   if (loading) return <div className="min-h-screen flex items-center justify-center bg-gray-50"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div></div>;
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans text-gray-900 antialiased flex flex-col">
       <nav className="bg-white border-b border-gray-200 sticky top-0 z-50 h-14 flex-shrink-0">
         <div className="max-w-5xl mx-auto px-4 h-full flex items-center justify-between relative w-full">
-          <button onClick={() => setCurrentView('home')} className="flex items-center gap-2 z-10 group"><span className="font-black text-xl tracking-tighter text-emerald-600">PrintLayers</span></button>
+          <button onClick={() => setCurrentView('home')} className="flex items-center gap-2 z-10 group"><span className="font-black text-xl tracking-tighter text-emerald-600 transition-all group-hover:scale-105">PrintLayers</span></button>
           
-          <div className="absolute left-1/2 transform -translate-x-1/2 text-sm font-semibold text-gray-400 whitespace-nowrap hidden sm:block uppercase tracking-widest">
+          <div className="absolute left-1/2 transform -translate-x-1/2 text-sm font-semibold text-gray-400 whitespace-nowrap hidden sm:block uppercase tracking-[0.2em]">
             {currentView}
           </div>
 
@@ -241,7 +283,9 @@ export default function App() {
             {user?.email === ADMIN_EMAIL && (
               <button onClick={() => setCurrentView('admin')} className="text-purple-600 font-black text-[10px] uppercase tracking-widest border-2 border-purple-100 px-2 py-1 rounded-lg hover:bg-purple-50 transition-all">Admin</button>
             )}
-            {cart.length > 0 && <button onClick={() => setCurrentView('cart')} className="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-[10px] font-black">CART: {cart.length}</button>}
+            <button onClick={() => navigateTo('cart')} className={`relative px-3 py-1 rounded-full text-[10px] font-black transition-all ${cart.length > 0 ? 'bg-emerald-600 text-white' : 'bg-gray-100 text-gray-400'}`}>
+              CART {cart.length > 0 && `(${cart.length})`}
+            </button>
             {user ? (
               <button onClick={() => supabase.auth.signOut()} className="text-gray-400 hover:text-red-600 transition-colors text-xs font-black uppercase tracking-wider">Sign Out</button>
             ) : (
@@ -343,7 +387,7 @@ export default function App() {
                 <div className="flex gap-4">{['STL', '3MF', 'STEP'].map(ext => <span key={ext} className="px-5 py-2 bg-gray-100 text-gray-500 text-[10px] font-black rounded-lg tracking-widest uppercase">{ext}</span>)}</div>
               </div>
             ) : (
-              <ThreeDViewer file={uploadedFile} onClear={() => setUploadedFile(null)} />
+              <ThreeDViewer file={uploadedFile} onClear={() => setUploadedFile(null)} onAddToCart={handleAddToCartFromConfig} />
             )}
           </div>
         )}
@@ -367,18 +411,67 @@ export default function App() {
         )}
 
         {currentView === 'cart' && (
-          <div className="max-w-3xl mx-auto w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <header className="flex items-center justify-between"><button onClick={() => setCurrentView('home')} className="text-xs font-black text-gray-400 hover:text-emerald-600 transition-colors">&larr; BACK</button><h2 className="text-4xl font-black italic tracking-tighter uppercase text-right">Cart</h2></header>
+          <div className="max-w-4xl mx-auto w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <header className="flex items-center justify-between">
+              <button onClick={() => setCurrentView('home')} className="text-xs font-black text-gray-400 hover:text-emerald-600 transition-colors">&larr; BACK</button>
+              <h2 className="text-4xl font-black italic tracking-tighter uppercase text-right">Shopping Cart</h2>
+            </header>
+            
             {cart.length === 0 ? (
-              <div className="bg-white rounded-[3rem] p-20 text-center border border-gray-100 shadow-sm"><p className="text-gray-400 font-bold">Your cart is empty.</p></div>
+              <div className="bg-white rounded-[3rem] p-20 text-center border border-gray-100 shadow-sm">
+                <p className="text-gray-400 font-bold mb-4">Your cart is empty.</p>
+                <button onClick={() => setCurrentView('search')} className="text-emerald-600 font-black text-[10px] uppercase tracking-widest border-b-2 border-emerald-500 pb-1">Start Discovering</button>
+              </div>
             ) : (
-              <div className="space-y-3">
-                {cart.map(item => (
-                  <div key={item.id} className="bg-white p-6 rounded-3xl border border-gray-100 flex items-center justify-between shadow-sm hover:border-emerald-500/40 transition-colors">
-                    <div><h4 className="font-black text-gray-900">{item.name}</h4><span className="text-[10px] font-black text-emerald-600 tracking-widest uppercase">{item.source}</span></div>
-                    <div className="flex gap-2"><button onClick={() => setCurrentView('adjust')} className="bg-gray-900 text-white px-5 py-2 rounded-xl font-black text-xs uppercase tracking-widest active:scale-95 transition-all">Adjust</button><button onClick={() => setCart(cart.filter(i => i.id !== item.id))} className="p-2 text-gray-300 hover:text-red-500 transition-colors"><svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button></div>
+              <div className="grid lg:grid-cols-3 gap-8 items-start">
+                <div className="lg:col-span-2 space-y-4">
+                  {cart.map(item => (
+                    <div key={item.id} className="bg-white p-6 rounded-3xl border border-gray-100 flex items-center gap-6 shadow-sm hover:border-emerald-500/40 transition-all group">
+                      <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center text-emerald-500 border border-gray-100 group-hover:bg-emerald-50 transition-colors">
+                        <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                        </svg>
+                      </div>
+                      <div className="flex-grow min-w-0">
+                        <h4 className="font-black text-gray-900 truncate uppercase text-sm tracking-tight">{item.name}</h4>
+                        <div className="flex items-center gap-4 mt-1">
+                          <span className="text-[10px] font-black text-emerald-600 tracking-widest uppercase bg-emerald-50 px-1.5 py-0.5 rounded">{item.material}</span>
+                          <span className="text-[10px] font-bold text-gray-400 uppercase">{item.source}</span>
+                          {item.weight > 0 && <span className="text-[10px] font-bold text-gray-400">{item.weight}g</span>}
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-black text-gray-900 text-lg">${item.price}</p>
+                        <button onClick={() => setCart(cart.filter(i => i.id !== item.id))} className="text-[10px] font-black text-gray-300 hover:text-red-500 uppercase tracking-widest transition-colors mt-1">Remove</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="bg-gray-900 rounded-[2.5rem] p-8 text-white space-y-6 shadow-2xl sticky top-24">
+                  <h3 className="font-black uppercase text-xs tracking-[0.2em] border-b border-white/10 pb-4">Order Summary</h3>
+                  <div className="space-y-3">
+                    <div className="flex justify-between text-xs font-bold text-gray-400">
+                      <span>Subtotal ({cart.length} items)</span>
+                      <span>${cart.reduce((acc, curr) => acc + parseFloat(curr.price), 0).toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between text-xs font-bold text-gray-400">
+                      <span>Processing Fee</span>
+                      <span className="text-emerald-500">FREE</span>
+                    </div>
+                    <div className="h-px bg-white/10 my-4"></div>
+                    <div className="flex justify-between items-center">
+                      <span className="font-black uppercase text-sm tracking-widest">Total</span>
+                      <span className="text-2xl font-black text-emerald-500">
+                        ${cart.reduce((acc, curr) => acc + parseFloat(curr.price), 0).toFixed(2)}
+                      </span>
+                    </div>
                   </div>
-                ))}
+                  <button className="w-full bg-emerald-600 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs shadow-lg shadow-emerald-900/50 hover:bg-emerald-500 transition-all active:scale-95">
+                    Proceed to Checkout
+                  </button>
+                  <p className="text-[9px] text-gray-500 text-center font-bold uppercase tracking-widest">Secure transaction via Stripe</p>
+                </div>
               </div>
             )}
           </div>
