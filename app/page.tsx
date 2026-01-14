@@ -2,15 +2,8 @@
 
 import React, { useEffect, useState, useRef } from 'react';
 
-/**
- * CONSTANTS
- * Your email is now set as the primary Admin identifier.
- */
 const ADMIN_EMAIL = 'ethan.barnacoat@gmail.com';
 
-/**
- * TYPES & INTERFACES
- */
 interface SupabaseUser {
   id: string;
   email?: string;
