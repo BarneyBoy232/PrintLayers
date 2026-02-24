@@ -24,6 +24,10 @@ interface CartItem {
 
 type View = 'home' | 'search' | 'adjust' | 'store' | 'partner' | 'signin' | 'cart' | 'admin';
 
+// Shared Constants for consistency between Viewer and Cart
+const MATERIALS = ["PLA", "PETG", "ABS", "TPU", "Resin"];
+const COLORS = ["Black", "White", "Grey", "Red", "Blue", "Navy Blue", "Neon Green", "Silk Gold", "Transparent", "Orange"];
+
 // --- Integrated 3D Viewer / Configurator ---
 function ThreeDViewer({ file, onClear, onAddToCart }: { file: File, onClear: () => void, onAddToCart: (config: { price: string, material: string, color: string, weight: number }) => void }) {
   const [weight, setWeight] = useState<number>(10);
@@ -31,56 +35,14 @@ function ThreeDViewer({ file, onClear, onAddToCart }: { file: File, onClear: () 
   const [color, setColor] = useState<string>('Black');
   const [showConfig, setShowConfig] = useState(false);
 
-  // Data: Color Families with Hex codes for the UI
-  // The 'variance' flag triggers a warning that shades might differ significantly between brands
-  const materialOptions: Record<string, { name: string, hex: string, variance?: boolean }[]> = {
-    PLA: [
-      { name: 'Black', hex: '#1a1a1a' },
-      { name: 'White', hex: '#f3f4f6' },
-      { name: 'Navy Blue', hex: '#1e3a8a' },
-      { name: 'Neon Green', hex: '#39ff14', variance: true },
-      { name: 'Silk Gold', hex: '#d4af37', variance: true },
-      { name: 'Red', hex: '#dc2626' }
-    ],
-    PETG: [
-      { name: 'Black', hex: '#1a1a1a' },
-      { name: 'White', hex: '#f3f4f6' },
-      { name: 'Transparent', hex: '#e5e7eb', variance: true },
-      { name: 'Orange', hex: '#f97316' }
-    ],
-    ABS: [
-      { name: 'Black', hex: '#1a1a1a' },
-      { name: 'Grey', hex: '#4b5563' },
-      { name: 'White', hex: '#f3f4f6' }
-    ]
-  };
-
-  // Reset color if material changes and current color isn't available
-  useEffect(() => {
-    const validColors = materialOptions[material] || [];
-    // If the currently selected color name doesn't exist in the new material list, reset to first option
-    if (!validColors.find(c => c.name === color)) {
-      setColor(validColors[0].name);
-    }
-  }, [material]);
-
-  const calculateEstimate = () => {
-    const materialRate = material === 'PLA' ? 0.05 : 0.08; 
-    const baseFee = 5.00;
-    const total = (weight * materialRate) + baseFee;
-    return total.toFixed(2);
-  };
-
   const handleAdd = () => {
     onAddToCart({
-      price: calculateEstimate(),
+      price: "Pending",
       material,
       color,
       weight
     });
   };
-
-  const currentColorObj = materialOptions[material]?.find(c => c.name === color);
 
   return (
     <div className="w-full space-y-6 animate-in zoom-in-95 duration-500">
@@ -93,101 +55,44 @@ function ThreeDViewer({ file, onClear, onAddToCart }: { file: File, onClear: () 
               </svg>
             </div>
             <h2 className="text-white text-2xl font-black italic tracking-tighter uppercase mb-2">{file.name}</h2>
-            <p className="text-gray-400 max-w-md mx-auto leading-relaxed">
-              File successfully loaded. Ready to scale, rotate, and estimate print costs.
-            </p>
+            <p className="text-gray-400 max-w-md mx-auto leading-relaxed">File successfully loaded. Ready for configuration.</p>
             <div className="mt-8 flex gap-4">
-              <button 
-                onClick={() => setShowConfig(true)}
-                className="bg-emerald-600 hover:bg-emerald-500 text-white px-8 py-3 rounded-xl font-bold transition-all shadow-lg shadow-emerald-900/20"
-              >
-                Configure Print
-              </button>
-              <button onClick={onClear} className="bg-white/5 hover:bg-white/10 text-white px-8 py-3 rounded-xl font-bold transition-all border border-white/10">
-                Clear File
-              </button>
+              <button onClick={() => setShowConfig(true)} className="bg-emerald-600 hover:bg-emerald-500 text-white px-8 py-3 rounded-xl font-bold transition-all shadow-lg">Configure Print</button>
+              <button onClick={onClear} className="bg-white/5 hover:bg-white/10 text-white px-8 py-3 rounded-xl font-bold transition-all border border-white/10">Clear File</button>
             </div>
           </div>
         ) : (
           <div className="absolute inset-0 p-8 flex flex-col md:flex-row gap-8 bg-gray-900/95 backdrop-blur-md">
-            <div className="flex-1 rounded-2xl bg-black/40 border border-white/5 flex items-center justify-center text-emerald-500 font-black italic">
-              3D PREVIEW ENGINE
-            </div>
+            <div className="flex-1 rounded-2xl bg-black/40 border border-white/5 flex items-center justify-center text-emerald-500 font-black italic">3D PREVIEW ENGINE</div>
             <div className="w-full md:w-80 space-y-6">
               <div className="space-y-4">
-                <div className="flex items-center justify-between border-b border-white/10 pb-2">
-                  <h3 className="text-white font-black uppercase text-sm tracking-widest">Print Config</h3>
-                  <span className="text-[10px] text-emerald-500 font-black bg-emerald-500/10 px-2 py-0.5 rounded">LIVE</span>
-                </div>
-                
-                {/* Material Selection */}
+                <h3 className="text-white font-black uppercase text-sm tracking-widest border-b border-white/10 pb-2">Print Config</h3>
                 <div>
                   <label className="block text-[10px] font-black text-gray-500 uppercase mb-2">Material</label>
-                  <select value={material} onChange={(e) => setMaterial(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white text-xs outline-none focus:border-emerald-500 transition-colors cursor-pointer">
-                    <option value="PLA">PLA (Standard)</option>
-                    <option value="PETG">PETG (Durable)</option>
-                    <option value="ABS">ABS (Heat Resistant)</option>
+                  <select value={material} onChange={(e) => setMaterial(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white text-xs outline-none">
+                    {MATERIALS.map(m => <option key={m} value={m} className="bg-gray-900">{m}</option>)}
                   </select>
                 </div>
-
-                {/* Color Selection (Swatch Grid) */}
                 <div>
-                  <div className="flex justify-between items-end mb-2">
-                     <label className="block text-[10px] font-black text-gray-500 uppercase">Color Family</label>
-                     <span className="text-[10px] font-bold text-white">{color}</span>
-                  </div>
-                  
-                  <div className="grid grid-cols-6 gap-2">
-                    {materialOptions[material]?.map((c) => (
-                      <button 
-                        key={c.name} 
-                        onClick={() => setColor(c.name)}
-                        className={`w-8 h-8 rounded-full border-2 transition-all hover:scale-110 ${color === c.name ? 'border-emerald-500 scale-110 shadow-[0_0_10px_rgba(16,185,129,0.5)]' : 'border-white/10 hover:border-white/50'}`}
-                        style={{ backgroundColor: c.hex }}
-                        title={c.name}
-                      />
-                    ))}
-                  </div>
-                  {/* Variance Disclaimer */}
-                  {currentColorObj?.variance ? (
-                    <p className="mt-2 text-[9px] text-yellow-500 font-bold bg-yellow-500/10 p-2 rounded-lg border border-yellow-500/20">
-                      ⚠ Note: High variance. Exact shade depends on partner brand.
-                    </p>
-                  ) : (
-                    <p className="mt-2 text-[9px] text-gray-500 font-bold">
-                       * Generic color match. Shade may vary by partner.
-                    </p>
-                  )}
+                  <label className="block text-[10px] font-black text-gray-500 uppercase mb-2">Color</label>
+                  <select value={color} onChange={(e) => setColor(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white text-xs outline-none">
+                    {COLORS.map(c => <option key={c} value={c} className="bg-gray-900">{c}</option>)}
+                  </select>
                 </div>
-
-                {/* Weight Input */}
                 <div>
                   <label className="block text-[10px] font-black text-gray-500 uppercase mb-2">Estimated Weight (g)</label>
-                  <input 
-                    type="number" 
-                    value={weight} 
-                    onChange={(e) => setWeight(Number(e.target.value))} 
-                    className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white text-xs outline-none focus:border-emerald-500 transition-colors" 
-                  />
+                  <input type="number" value={weight} onChange={(e) => setWeight(Number(e.target.value))} className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white text-xs outline-none" />
                 </div>
               </div>
               <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
-                <p className="text-[10px] font-black text-emerald-500 uppercase mb-1">Estimated Total</p>
-                <p className="text-2xl font-black text-white">${calculateEstimate()}</p>
+                <p className="text-[10px] font-black text-emerald-500 uppercase mb-1">Quote Status</p>
+                <p className="text-xl font-black text-white italic">PENDING REVIEW</p>
               </div>
-              <button 
-                onClick={handleAdd}
-                className="w-full bg-emerald-600 text-white py-3 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-emerald-500 transition-all shadow-lg active:scale-95"
-              >
-                Add to Cart
-              </button>
+              <button onClick={handleAdd} className="w-full bg-emerald-600 text-white py-3 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-emerald-500 transition-all shadow-lg active:scale-95">Add to Cart</button>
               <button onClick={() => setShowConfig(false)} className="w-full text-gray-500 font-bold text-[10px] uppercase hover:text-white transition-colors">Back</button>
             </div>
           </div>
         )}
-        <div className="absolute inset-0 pointer-events-none opacity-10" 
-             style={{ backgroundImage: 'radial-gradient(#10b981 1px, transparent 1px)', backgroundSize: '32px 32px' }}>
-        </div>
       </div>
     </div>
   );
@@ -200,7 +105,6 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [currentView, setCurrentView] = useState<View>('home');
   const [authError, setAuthError] = useState<string | null>(null);
-  
   const [cart, setCart] = useState<CartItem[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [importUrl, setImportUrl] = useState('');
@@ -219,28 +123,17 @@ export default function App() {
   useEffect(() => {
     if (isInitialized.current) return;
     isInitialized.current = true;
-
     const script = document.createElement('script');
     script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
     script.async = true;
-    
     script.onload = () => {
       const client = (window as any).supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
       setSupabase(client);
-
-      client.auth.getSession().then(({ data: { session } }: any) => {
-        setUser(session?.user ?? null);
-        setLoading(false);
-      });
-
+      client.auth.getSession().then(({ data: { session } }: any) => { setUser(session?.user ?? null); setLoading(false); });
       const { data: { subscription } } = client.auth.onAuthStateChange((event: string, session: any) => {
         const currentUser = session?.user ?? null;
         setUser(currentUser);
-        if (event === 'SIGNED_IN' && currentUser) {
-          setAuthSubmitting(false);
-          setAuthError(null);
-          setCurrentView('home');
-        }
+        if (event === 'SIGNED_IN' && currentUser) { setAuthSubmitting(false); setAuthError(null); setCurrentView('home'); }
         if (event === 'SIGNED_OUT') setCurrentView('home');
       });
       authListenerRef.current = subscription;
@@ -248,6 +141,10 @@ export default function App() {
     document.head.appendChild(script);
     return () => { if (authListenerRef.current) authListenerRef.current.unsubscribe(); };
   }, []);
+
+  const updateCartItem = (id: string, updates: Partial<CartItem>) => {
+    setCart(cart.map(item => item.id === id ? { ...item, ...updates } : item));
+  };
 
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -273,17 +170,14 @@ export default function App() {
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
-        options: { redirectTo: window.location.origin, queryParams: { access_type: 'offline', prompt: 'consent' } }
+        options: { redirectTo: window.location.origin }
       });
       if (error) throw error;
     } catch (err: any) { setAuthError(err.message || "Google OAuth failed."); setAuthSubmitting(false); }
   };
 
   const navigateTo = (view: View) => {
-    if (view === 'admin' && user?.email !== ADMIN_EMAIL) {
-      setAuthError("Access Denied: Admins Only.");
-      return;
-    }
+    if (view === 'admin' && user?.email !== ADMIN_EMAIL) { setAuthError("Access Denied: Admins Only."); return; }
     if (!user && view !== 'home') { setCurrentView('signin'); return; }
     setCurrentView(view);
   };
@@ -296,16 +190,14 @@ export default function App() {
       const pathParts = new URL(importUrl).pathname.split('/').filter(p => p);
       if (pathParts.length > 0) name = pathParts[pathParts.length - 1].replace(/-/g, ' ');
     } catch (e) {}
-    
-    // Add external model to cart with a base configuration
     setCart([...cart, { 
       id: Math.random().toString(36).substr(2, 9), 
       name, 
       source: importUrl.includes('makerworld') ? 'MakerWorld' : 'Thingiverse', 
       url: importUrl,
-      price: '5.00',
+      price: 'Pending',
       material: 'PLA',
-      color: 'White', // Default color for imports
+      color: 'Black',
       weight: 0
     }]);
     setImportUrl('');
@@ -329,7 +221,7 @@ export default function App() {
       weight: config.weight
     };
     setCart([...cart, newItem]);
-    setUploadedFile(null); // Reset for next upload
+    setUploadedFile(null);
     setCurrentView('cart');
   };
 
@@ -340,54 +232,30 @@ export default function App() {
       <nav className="bg-white border-b border-gray-200 sticky top-0 z-50 h-14 flex-shrink-0">
         <div className="max-w-5xl mx-auto px-4 h-full flex items-center justify-between relative w-full">
           <button onClick={() => setCurrentView('home')} className="flex items-center gap-2 z-10 group"><span className="font-black text-xl tracking-tighter text-emerald-600 transition-all group-hover:scale-105">PrintLayers</span></button>
-          
-          <div className="absolute left-1/2 transform -translate-x-1/2 text-sm font-semibold text-gray-400 whitespace-nowrap hidden sm:block uppercase tracking-[0.2em]">
-            {currentView}
-          </div>
-
+          <div className="absolute left-1/2 transform -translate-x-1/2 text-sm font-semibold text-gray-400 whitespace-nowrap hidden sm:block uppercase tracking-[0.2em]">{currentView}</div>
           <div className="flex gap-6 text-sm font-medium text-gray-600 z-10 items-center">
-            {user?.email === ADMIN_EMAIL && (
-              <button onClick={() => setCurrentView('admin')} className="text-purple-600 font-black text-[10px] uppercase tracking-widest border-2 border-purple-100 px-2 py-1 rounded-lg hover:bg-purple-50 transition-all">Admin</button>
-            )}
-            <button onClick={() => navigateTo('cart')} className={`relative px-3 py-1 rounded-full text-[10px] font-black transition-all ${cart.length > 0 ? 'bg-emerald-600 text-white' : 'bg-gray-100 text-gray-400'}`}>
-              CART {cart.length > 0 && `(${cart.length})`}
-            </button>
-            {user ? (
-              <button onClick={() => supabase.auth.signOut()} className="text-gray-400 hover:text-red-600 transition-colors text-xs font-black uppercase tracking-wider">Sign Out</button>
-            ) : (
-              currentView !== 'signin' && <button onClick={() => setCurrentView('signin')} className="text-emerald-600 font-black hover:text-emerald-700 transition-colors uppercase tracking-wider text-xs">Sign In</button>
-            )}
+            {user?.email === ADMIN_EMAIL && <button onClick={() => setCurrentView('admin')} className="text-purple-600 font-black text-[10px] uppercase tracking-widest border-2 border-purple-100 px-2 py-1 rounded-lg hover:bg-purple-50 transition-all">Admin</button>}
+            <button onClick={() => navigateTo('cart')} className={`relative px-3 py-1 rounded-full text-[10px] font-black transition-all ${cart.length > 0 ? 'bg-emerald-600 text-white' : 'bg-gray-100 text-gray-400'}`}>CART {cart.length > 0 && `(${cart.length})`}</button>
+            {user ? <button onClick={() => supabase.auth.signOut()} className="text-gray-400 hover:text-red-600 transition-colors text-xs font-black uppercase tracking-wider">Sign Out</button> : (currentView !== 'signin' && <button onClick={() => setCurrentView('signin')} className="text-emerald-600 font-black hover:text-emerald-700 transition-colors uppercase tracking-wider text-xs">Sign In</button>)}
           </div>
         </div>
       </nav>
 
       <main className="max-w-5xl mx-auto px-4 py-8 w-full flex-grow flex flex-col">
-        {/* SIGN IN VIEW */}
         {currentView === 'signin' && (
           <div className="flex-grow flex items-center justify-center py-12">
-            <div className="w-full max-w-md bg-white p-8 rounded-[2.5rem] shadow-2xl border border-gray-100">
-               <div className="text-center">
-                  <h1 className="text-3xl font-black text-gray-900 mb-2 leading-tight">{isSignUpMode ? 'Create Account' : 'Welcome Back'}</h1>
-                  <p className="text-gray-400 font-bold text-xs uppercase tracking-widest mb-8">{isSignUpMode ? 'Join the network' : 'Enter details to continue'}</p>
-                  
-                  {authError && <div className="mb-6 p-4 bg-red-50 border border-red-100 text-red-600 text-xs font-bold rounded-xl">{String(authError)}</div>}
-                  
-                  <form onSubmit={handleEmailAuth} className="space-y-4 text-left">
-                    <input type="email" placeholder="Email" required className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-100 outline-none focus:border-emerald-500 text-sm" value={email} onChange={e => setEmail(e.target.value)} />
-                    <input type="password" placeholder="Password" required className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-100 outline-none focus:border-emerald-500 text-sm" value={password} onChange={e => setPassword(e.target.value)} />
-                    {isSignUpMode && <input type="password" placeholder="Confirm Password" required className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-100 outline-none focus:border-emerald-500 text-sm" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} />}
-                    <button type="submit" disabled={authSubmitting} className="w-full bg-emerald-600 text-white py-3.5 rounded-2xl font-black shadow-lg hover:bg-emerald-500 transition-all uppercase tracking-widest text-xs disabled:opacity-50 active:scale-95">{authSubmitting ? '...' : (isSignUpMode ? 'Sign Up' : 'Sign In')}</button>
-                  </form>
-
-                  <div className="my-8 flex items-center gap-4 text-gray-200"><div className="h-px bg-gray-100 flex-grow"></div><span className="text-[10px] font-black uppercase text-gray-400">Or continue with</span><div className="h-px bg-gray-100 flex-grow"></div></div>
-                  
-                  <button onClick={handleOAuthSignIn} disabled={authSubmitting} className="w-full flex items-center justify-center gap-3 bg-white border-2 border-gray-100 py-3.5 rounded-2xl font-bold text-gray-700 hover:bg-gray-50 transition-all shadow-sm active:scale-95">
-                    <svg className="w-5 h-5" viewBox="0 0 48 48">
-                      <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/>
-                    </svg>Google
-                  </button>
-                  <div className="mt-8 pt-6 border-t border-gray-50"><button onClick={() => setIsSignUpMode(!isSignUpMode)} className="text-xs font-black text-emerald-600 uppercase tracking-wider transition-colors hover:text-emerald-700">{isSignUpMode ? 'Back to Sign In' : "Join Network"}</button></div>
-               </div>
+            <div className="w-full max-w-md bg-white p-8 rounded-[2.5rem] shadow-2xl border border-gray-100 text-center">
+              <h1 className="text-3xl font-black text-gray-900 mb-2">{isSignUpMode ? 'Create Account' : 'Welcome Back'}</h1>
+              <p className="text-gray-400 font-bold text-xs uppercase tracking-widest mb-8">{isSignUpMode ? 'Join the network' : 'Enter details to continue'}</p>
+              {authError && <div className="mb-6 p-4 bg-red-50 border border-red-100 text-red-600 text-xs font-bold rounded-xl">{String(authError)}</div>}
+              <form onSubmit={handleEmailAuth} className="space-y-4 text-left">
+                <input type="email" placeholder="Email" required className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-100 outline-none focus:border-emerald-500 text-sm" value={email} onChange={e => setEmail(e.target.value)} />
+                <input type="password" placeholder="Password" required className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-100 outline-none focus:border-emerald-500 text-sm" value={password} onChange={e => setPassword(e.target.value)} />
+                {isSignUpMode && <input type="password" placeholder="Confirm Password" required className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-100 outline-none focus:border-emerald-500 text-sm" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} />}
+                <button type="submit" disabled={authSubmitting} className="w-full bg-emerald-600 text-white py-3.5 rounded-2xl font-black shadow-lg hover:bg-emerald-500 transition-all uppercase tracking-widest text-xs disabled:opacity-50 active:scale-95">{authSubmitting ? '...' : (isSignUpMode ? 'Sign Up' : 'Sign In')}</button>
+              </form>
+              <button onClick={handleOAuthSignIn} disabled={authSubmitting} className="mt-4 w-full flex items-center justify-center gap-3 bg-white border-2 border-gray-100 py-3.5 rounded-2xl font-bold text-gray-700 hover:bg-gray-50 transition-all shadow-sm active:scale-95">Google Login</button>
+              <div className="mt-8 pt-6 border-t border-gray-50"><button onClick={() => setIsSignUpMode(!isSignUpMode)} className="text-xs font-black text-emerald-600 uppercase tracking-wider transition-colors hover:text-emerald-700">{isSignUpMode ? 'Back to Sign In' : "Join Network"}</button></div>
             </div>
           </div>
         )}
@@ -447,42 +315,16 @@ export default function App() {
             {!uploadedFile ? (
               <div onClick={() => fileInputRef.current?.click()} className="group w-full min-h-[500px] border-4 border-dashed border-gray-200 rounded-[3rem] bg-white flex flex-col items-center justify-center p-20 text-center cursor-pointer hover:border-emerald-500/50 transition-all duration-500">
                 <input type="file" ref={fileInputRef} className="hidden" accept=".stl,.3mf,.step,.stp" onChange={handleFileUpload} />
-                <div className="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center mb-8 border border-gray-100 group-hover:scale-110 group-hover:bg-emerald-100 transition-all shadow-sm"><svg className="w-10 h-10 text-gray-300 group-hover:text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg></div>
+                <div className="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center mb-8 border border-gray-100 hover:scale-110 hover:bg-emerald-100 transition-all shadow-sm"><svg className="w-10 h-10 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg></div>
                 <h3 className="text-2xl font-black text-gray-900 mb-2 uppercase tracking-tighter italic">Drop 3D File Here</h3>
-                <p className="text-gray-400 font-bold mb-8">Select STL, 3MF, or STEP to begin configuration.</p>
-                <div className="flex gap-4">{['STL', '3MF', 'STEP'].map(ext => <span key={ext} className="px-5 py-2 bg-gray-100 text-gray-500 text-[10px] font-black rounded-lg tracking-widest uppercase">{ext}</span>)}</div>
               </div>
-            ) : (
-              <ThreeDViewer file={uploadedFile} onClear={() => setUploadedFile(null)} onAddToCart={handleAddToCartFromConfig} />
-            )}
-          </div>
-        )}
-
-        {currentView === 'admin' && (
-          <div className="max-w-4xl mx-auto w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <header className="text-center relative">
-              <button onClick={() => setCurrentView('home')} className="absolute left-0 top-1/2 -translate-y-1/2 text-xs font-black text-gray-400 hover:text-emerald-600 transition-colors">&larr; BACK</button>
-              <h2 className="text-4xl font-black italic tracking-tighter uppercase text-purple-600">Admin Console</h2>
-            </header>
-            <div className="bg-white rounded-[2.5rem] border-2 border-purple-100 p-8">
-              <h3 className="font-black uppercase text-xs tracking-widest text-purple-400 mb-4 text-center">Live Business Overview</h3>
-              <div className="grid grid-cols-3 gap-4 mb-8">
-                <div className="bg-purple-50 p-6 rounded-2xl text-center"><p className="text-[10px] font-black uppercase text-purple-400">Total Sales</p><p className="text-2xl font-black text-purple-700">$0.00</p></div>
-                <div className="bg-purple-50 p-6 rounded-2xl text-center"><p className="text-[10px] font-black uppercase text-purple-400">Active Jobs</p><p className="text-2xl font-black text-purple-700">0</p></div>
-                <div className="bg-purple-50 p-6 rounded-2xl text-center"><p className="text-[10px] font-black uppercase text-purple-400">Partners</p><p className="text-2xl font-black text-purple-700">1</p></div>
-              </div>
-              <p className="text-center text-gray-400 font-bold italic text-sm">Row Level Security (RLS) is active. No orders to display yet.</p>
-            </div>
+            ) : ( <ThreeDViewer file={uploadedFile} onClear={() => setUploadedFile(null)} onAddToCart={handleAddToCartFromConfig} /> )}
           </div>
         )}
 
         {currentView === 'cart' && (
           <div className="max-w-4xl mx-auto w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <header className="flex items-center justify-between">
-              <button onClick={() => setCurrentView('home')} className="text-xs font-black text-gray-400 hover:text-emerald-600 transition-colors">&larr; BACK</button>
-              <h2 className="text-4xl font-black italic tracking-tighter uppercase text-right">Shopping Cart</h2>
-            </header>
-            
+            <header className="flex items-center justify-between"><button onClick={() => setCurrentView('home')} className="text-xs font-black text-gray-400 hover:text-emerald-600 transition-colors">&larr; BACK</button><h2 className="text-4xl font-black italic tracking-tighter uppercase text-right">Quote Request</h2></header>
             {cart.length === 0 ? (
               <div className="bg-white rounded-[3rem] p-20 text-center border border-gray-100 shadow-sm">
                 <p className="text-gray-400 font-bold mb-4">Your cart is empty.</p>
@@ -492,53 +334,54 @@ export default function App() {
               <div className="grid lg:grid-cols-3 gap-8 items-start">
                 <div className="lg:col-span-2 space-y-4">
                   {cart.map(item => (
-                    <div key={item.id} className="bg-white p-6 rounded-3xl border border-gray-100 flex items-center gap-6 shadow-sm hover:border-emerald-500/40 transition-all group">
-                      <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center text-emerald-500 border border-gray-100 group-hover:bg-emerald-50 transition-colors">
-                        <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                        </svg>
-                      </div>
-                      <div className="flex-grow min-w-0">
-                        <h4 className="font-black text-gray-900 truncate uppercase text-sm tracking-tight">{item.name}</h4>
-                        <div className="flex items-center gap-4 mt-1">
-                          <span className="text-[10px] font-black text-emerald-600 tracking-widest uppercase bg-emerald-50 px-1.5 py-0.5 rounded">{item.material}</span>
-                          <span className="text-[10px] font-bold text-gray-400 uppercase">{item.source}</span>
-                          {item.weight > 0 && <span className="text-[10px] font-bold text-gray-400">{item.weight}g</span>}
-                          {/* New: Display Color */}
-                          <span className="text-[10px] font-bold text-gray-500 uppercase">{item.color}</span>
+                    <div key={item.id} className="bg-white p-6 rounded-3xl border border-gray-100 flex flex-col gap-4 shadow-sm hover:border-emerald-500/40 transition-all">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 bg-gray-50 rounded-xl flex items-center justify-center text-emerald-500 border border-gray-100">
+                          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
                         </div>
+                        <div className="flex-grow">
+                          <h4 className="font-black text-gray-900 truncate uppercase text-sm tracking-tight">{item.name}</h4>
+                          <p className="text-[10px] font-bold text-gray-400 uppercase">{item.source}</p>
+                        </div>
+                        <button onClick={() => setCart(cart.filter(i => i.id !== item.id))} className="text-[10px] font-black text-gray-300 hover:text-red-500 uppercase tracking-widest transition-colors">Remove</button>
                       </div>
-                      <div className="text-right">
-                        <p className="font-black text-gray-900 text-lg">${item.price}</p>
-                        <button onClick={() => setCart(cart.filter(i => i.id !== item.id))} className="text-[10px] font-black text-gray-300 hover:text-red-500 uppercase tracking-widest transition-colors mt-1">Remove</button>
+                      
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-[10px] font-black text-gray-400 uppercase mb-1">Material</label>
+                          <select 
+                            value={item.material} 
+                            onChange={(e) => updateCartItem(item.id, { material: e.target.value })}
+                            className="w-full bg-gray-50 border border-gray-100 rounded-lg p-2 text-[10px] font-bold outline-none"
+                          >
+                            {MATERIALS.map(m => <option key={m} value={m}>{m}</option>)}
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-black text-gray-400 uppercase mb-1">Color</label>
+                          <select 
+                            value={item.color} 
+                            onChange={(e) => updateCartItem(item.id, { color: e.target.value })}
+                            className="w-full bg-gray-50 border border-gray-100 rounded-lg p-2 text-[10px] font-bold outline-none"
+                          >
+                            {COLORS.map(c => <option key={c} value={c}>{c}</option>)}
+                          </select>
+                        </div>
                       </div>
                     </div>
                   ))}
                 </div>
 
                 <div className="bg-gray-900 rounded-[2.5rem] p-8 text-white space-y-6 shadow-2xl sticky top-24">
-                  <h3 className="font-black uppercase text-xs tracking-[0.2em] border-b border-white/10 pb-4">Order Summary</h3>
-                  <div className="space-y-3">
-                    <div className="flex justify-between text-xs font-bold text-gray-400">
-                      <span>Subtotal ({cart.length} items)</span>
-                      <span>${cart.reduce((acc, curr) => acc + parseFloat(curr.price), 0).toFixed(2)}</span>
-                    </div>
-                    <div className="flex justify-between text-xs font-bold text-gray-400">
-                      <span>Processing Fee</span>
-                      <span className="text-emerald-500">FREE</span>
-                    </div>
-                    <div className="h-px bg-white/10 my-4"></div>
+                  <h3 className="font-black uppercase text-xs tracking-[0.2em] border-b border-white/10 pb-4">Quote Summary</h3>
+                  <div className="space-y-4">
                     <div className="flex justify-between items-center">
                       <span className="font-black uppercase text-sm tracking-widest">Total</span>
-                      <span className="text-2xl font-black text-emerald-500">
-                        ${cart.reduce((acc, curr) => acc + parseFloat(curr.price), 0).toFixed(2)}
-                      </span>
+                      <span className="text-xl font-black text-emerald-500 italic">PENDING</span>
                     </div>
+                    <p className="text-[10px] text-gray-400 font-bold leading-relaxed">Price is calculated after a partner reviews your material and color requirements.</p>
                   </div>
-                  <button className="w-full bg-emerald-600 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs shadow-lg shadow-emerald-900/50 hover:bg-emerald-500 transition-all active:scale-95">
-                    Proceed to Checkout
-                  </button>
-                  <p className="text-[9px] text-gray-500 text-center font-bold uppercase tracking-widest">Secure transaction via Stripe</p>
+                  <button className="w-full bg-emerald-600 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs shadow-lg hover:bg-emerald-500 transition-all">Request Quote</button>
                 </div>
               </div>
             )}
