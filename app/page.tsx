@@ -3,6 +3,8 @@
 import React, { useEffect, useState, useRef } from 'react';
 
 const ADMIN_EMAIL = 'ethan.barnacoat@gmail.com';
+const SUPABASE_URL = 'https://xijtyfewiimfcwoodxlq.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhpanR5ZmV3aWltZmN3b29keGxxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY0NzA4ODQsImV4cCI6MjA4MjA0Njg4NH0.tc4usglFmTnLKJSEfw_KAdHCiltpykUtaBo9bhppdjw';
 
 interface SupabaseUser {
   id: string;
@@ -16,16 +18,51 @@ interface CartItem {
   url?: string;
   price: string;
   material: string;
+  color: string;
   weight: number;
 }
 
 type View = 'home' | 'search' | 'adjust' | 'store' | 'partner' | 'signin' | 'cart' | 'admin';
 
 // --- Integrated 3D Viewer / Configurator ---
-function ThreeDViewer({ file, onClear, onAddToCart }: { file: File, onClear: () => void, onAddToCart: (config: { price: string, material: string, weight: number }) => void }) {
+function ThreeDViewer({ file, onClear, onAddToCart }: { file: File, onClear: () => void, onAddToCart: (config: { price: string, material: string, color: string, weight: number }) => void }) {
   const [weight, setWeight] = useState<number>(10);
   const [material, setMaterial] = useState<string>('PLA');
+  const [color, setColor] = useState<string>('Black');
   const [showConfig, setShowConfig] = useState(false);
+
+  // Data: Color Families with Hex codes for the UI
+  // The 'variance' flag triggers a warning that shades might differ significantly between brands
+  const materialOptions: Record<string, { name: string, hex: string, variance?: boolean }[]> = {
+    PLA: [
+      { name: 'Black', hex: '#1a1a1a' },
+      { name: 'White', hex: '#f3f4f6' },
+      { name: 'Navy Blue', hex: '#1e3a8a' },
+      { name: 'Neon Green', hex: '#39ff14', variance: true },
+      { name: 'Silk Gold', hex: '#d4af37', variance: true },
+      { name: 'Red', hex: '#dc2626' }
+    ],
+    PETG: [
+      { name: 'Black', hex: '#1a1a1a' },
+      { name: 'White', hex: '#f3f4f6' },
+      { name: 'Transparent', hex: '#e5e7eb', variance: true },
+      { name: 'Orange', hex: '#f97316' }
+    ],
+    ABS: [
+      { name: 'Black', hex: '#1a1a1a' },
+      { name: 'Grey', hex: '#4b5563' },
+      { name: 'White', hex: '#f3f4f6' }
+    ]
+  };
+
+  // Reset color if material changes and current color isn't available
+  useEffect(() => {
+    const validColors = materialOptions[material] || [];
+    // If the currently selected color name doesn't exist in the new material list, reset to first option
+    if (!validColors.find(c => c.name === color)) {
+      setColor(validColors[0].name);
+    }
+  }, [material]);
 
   const calculateEstimate = () => {
     const materialRate = material === 'PLA' ? 0.05 : 0.08; 
@@ -38,9 +75,12 @@ function ThreeDViewer({ file, onClear, onAddToCart }: { file: File, onClear: () 
     onAddToCart({
       price: calculateEstimate(),
       material,
+      color,
       weight
     });
   };
+
+  const currentColorObj = materialOptions[material]?.find(c => c.name === color);
 
   return (
     <div className="w-full space-y-6 animate-in zoom-in-95 duration-500">
@@ -79,21 +119,55 @@ function ThreeDViewer({ file, onClear, onAddToCart }: { file: File, onClear: () 
                   <h3 className="text-white font-black uppercase text-sm tracking-widest">Print Config</h3>
                   <span className="text-[10px] text-emerald-500 font-black bg-emerald-500/10 px-2 py-0.5 rounded">LIVE</span>
                 </div>
+                
+                {/* Material Selection */}
                 <div>
-                  <label className="block text-[10px] font-black text-gray-500 uppercase mb-1">Material</label>
-                  <select value={material} onChange={(e) => setMaterial(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-lg p-2 text-white text-xs outline-none focus:border-emerald-500">
+                  <label className="block text-[10px] font-black text-gray-500 uppercase mb-2">Material</label>
+                  <select value={material} onChange={(e) => setMaterial(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white text-xs outline-none focus:border-emerald-500 transition-colors cursor-pointer">
                     <option value="PLA">PLA (Standard)</option>
                     <option value="PETG">PETG (Durable)</option>
                     <option value="ABS">ABS (Heat Resistant)</option>
                   </select>
                 </div>
+
+                {/* Color Selection (Swatch Grid) */}
                 <div>
-                  <label className="block text-[10px] font-black text-gray-500 uppercase mb-1">Estimated Weight (g)</label>
+                  <div className="flex justify-between items-end mb-2">
+                     <label className="block text-[10px] font-black text-gray-500 uppercase">Color Family</label>
+                     <span className="text-[10px] font-bold text-white">{color}</span>
+                  </div>
+                  
+                  <div className="grid grid-cols-6 gap-2">
+                    {materialOptions[material]?.map((c) => (
+                      <button 
+                        key={c.name} 
+                        onClick={() => setColor(c.name)}
+                        className={`w-8 h-8 rounded-full border-2 transition-all hover:scale-110 ${color === c.name ? 'border-emerald-500 scale-110 shadow-[0_0_10px_rgba(16,185,129,0.5)]' : 'border-white/10 hover:border-white/50'}`}
+                        style={{ backgroundColor: c.hex }}
+                        title={c.name}
+                      />
+                    ))}
+                  </div>
+                  {/* Variance Disclaimer */}
+                  {currentColorObj?.variance ? (
+                    <p className="mt-2 text-[9px] text-yellow-500 font-bold bg-yellow-500/10 p-2 rounded-lg border border-yellow-500/20">
+                      ⚠ Note: High variance. Exact shade depends on partner brand.
+                    </p>
+                  ) : (
+                    <p className="mt-2 text-[9px] text-gray-500 font-bold">
+                       * Generic color match. Shade may vary by partner.
+                    </p>
+                  )}
+                </div>
+
+                {/* Weight Input */}
+                <div>
+                  <label className="block text-[10px] font-black text-gray-500 uppercase mb-2">Estimated Weight (g)</label>
                   <input 
                     type="number" 
                     value={weight} 
                     onChange={(e) => setWeight(Number(e.target.value))} 
-                    className="w-full bg-white/5 border border-white/10 rounded-lg p-2 text-white text-xs outline-none focus:border-emerald-500" 
+                    className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white text-xs outline-none focus:border-emerald-500 transition-colors" 
                   />
                 </div>
               </div>
@@ -151,10 +225,7 @@ export default function App() {
     script.async = true;
     
     script.onload = () => {
-      const supabaseUrl = 'https://xijtyfewiimfcwoodxlq.supabase.co';
-      const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhpanR5ZmV3aWltZmN3b29keGxxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY0NzA4ODQsImV4cCI6MjA4MjA0Njg4NH0.tc4usglFmTnLKJSEfw_KAdHCiltpykUtaBo9bhppdjw';
-
-      const client = (window as any).supabase.createClient(supabaseUrl, supabaseAnonKey);
+      const client = (window as any).supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
       setSupabase(client);
 
       client.auth.getSession().then(({ data: { session } }: any) => {
@@ -234,6 +305,7 @@ export default function App() {
       url: importUrl,
       price: '5.00',
       material: 'PLA',
+      color: 'White', // Default color for imports
       weight: 0
     }]);
     setImportUrl('');
@@ -245,7 +317,7 @@ export default function App() {
     if (file) setUploadedFile(file);
   };
 
-  const handleAddToCartFromConfig = (config: { price: string, material: string, weight: number }) => {
+  const handleAddToCartFromConfig = (config: { price: string, material: string, color: string, weight: number }) => {
     if (!uploadedFile) return;
     const newItem: CartItem = {
       id: Math.random().toString(36).substr(2, 9),
@@ -253,6 +325,7 @@ export default function App() {
       source: 'Direct Upload',
       price: config.price,
       material: config.material,
+      color: config.color,
       weight: config.weight
     };
     setCart([...cart, newItem]);
@@ -431,6 +504,8 @@ export default function App() {
                           <span className="text-[10px] font-black text-emerald-600 tracking-widest uppercase bg-emerald-50 px-1.5 py-0.5 rounded">{item.material}</span>
                           <span className="text-[10px] font-bold text-gray-400 uppercase">{item.source}</span>
                           {item.weight > 0 && <span className="text-[10px] font-bold text-gray-400">{item.weight}g</span>}
+                          {/* New: Display Color */}
+                          <span className="text-[10px] font-bold text-gray-500 uppercase">{item.color}</span>
                         </div>
                       </div>
                       <div className="text-right">
