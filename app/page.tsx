@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, useRef } from 'react';
+import { Home, Search, Plus, ShoppingCart, User, Settings, Store, ArrowLeft } from 'lucide-react';
 
 const ADMIN_EMAIL = 'ethan.barnacoat@gmail.com';
 const SUPABASE_URL = 'https://xijtyfewiimfcwoodxlq.supabase.co';
@@ -46,8 +47,8 @@ function ThreeDViewer({ file, onClear, onAddToCart }: { file: File, onClear: () 
   };
 
   return (
-    <div className="w-full space-y-6 animate-in zoom-in-95 duration-500">
-      <div className="w-full h-[500px] bg-gray-900 rounded-[3rem] overflow-hidden relative border border-gray-800 shadow-2xl">
+    <div className="w-full h-full space-y-6 animate-in zoom-in-95 duration-500">
+      <div className="w-full h-[60vh] min-h-[400px] bg-gray-900 rounded-[3rem] overflow-hidden relative border border-gray-800 shadow-2xl">
         {!showConfig ? (
           <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-12">
             <div className="w-20 h-20 bg-emerald-500/20 rounded-full flex items-center justify-center mb-6 animate-pulse">
@@ -186,7 +187,7 @@ export default function App() {
 
   const navigateTo = (view: View) => {
     if (view === 'admin' && user?.email !== ADMIN_EMAIL) { setAuthError("Access Denied: Admins Only."); return; }
-    if (!user && view !== 'home') { setCurrentView('signin'); return; }
+    if (!user && view !== 'home' && view !== 'search' && view !== 'store') { setCurrentView('signin'); return; }
     setCurrentView(view);
   };
 
@@ -233,177 +234,288 @@ export default function App() {
     setCurrentView('cart');
   };
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center bg-gray-50"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div></div>;
+  if (loading) return <div className="h-screen w-screen flex items-center justify-center bg-gray-50"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div></div>;
+
+  // View Titles mapping for the App Header
+  const getHeaderTitle = () => {
+    switch (currentView) {
+      case 'home': return 'PrintLayers';
+      case 'search': return 'Discover';
+      case 'adjust': return 'Configure';
+      case 'store': return 'Parts Store';
+      case 'cart': return 'Quote Request';
+      case 'partner': return 'Partner Network';
+      case 'signin': return 'Authentication';
+      case 'admin': return 'Admin Panel';
+      default: return 'PrintLayers';
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans text-gray-900 antialiased flex flex-col">
-      <nav className="bg-white border-b border-gray-200 sticky top-0 z-50 h-14 flex-shrink-0">
-        <div className="max-w-5xl mx-auto px-4 h-full flex items-center justify-between relative w-full">
-          <button onClick={() => setCurrentView('home')} className="flex items-center gap-2 z-10 group"><span className="font-black text-xl tracking-tighter text-emerald-600 transition-all group-hover:scale-105">PrintLayers</span></button>
-          <div className="absolute left-1/2 transform -translate-x-1/2 text-sm font-semibold text-gray-400 whitespace-nowrap hidden sm:block uppercase tracking-[0.2em]">{currentView}</div>
-          <div className="flex gap-6 text-sm font-medium text-gray-600 z-10 items-center">
-            {user?.email === ADMIN_EMAIL && <button onClick={() => setCurrentView('admin')} className="text-purple-600 font-black text-[10px] uppercase tracking-widest border-2 border-purple-100 px-2 py-1 rounded-lg hover:bg-purple-50 transition-all">Admin</button>}
-            <button onClick={() => navigateTo('cart')} className={`relative px-3 py-1 rounded-full text-[10px] font-black transition-all ${cart.length > 0 ? 'bg-emerald-600 text-white' : 'bg-gray-100 text-gray-400'}`}>CART {cart.length > 0 && `(${cart.length})`}</button>
-            {user ? <button onClick={() => supabase.auth.signOut()} className="text-gray-400 hover:text-red-600 transition-colors text-xs font-black uppercase tracking-wider">Sign Out</button> : (currentView !== 'signin' && <button onClick={() => setCurrentView('signin')} className="text-emerald-600 font-black hover:text-emerald-700 transition-colors uppercase tracking-wider text-xs">Sign In</button>)}
+    <div className="h-screen w-full bg-gray-50 font-sans text-gray-900 antialiased flex flex-col overflow-hidden relative selection:bg-emerald-200">
+      
+      {/* Dynamic App Header */}
+      <header className="flex-shrink-0 px-6 py-5 bg-gray-50/80 backdrop-blur-md z-40 sticky top-0">
+        <div className="max-w-4xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            {currentView !== 'home' && (
+              <button onClick={() => setCurrentView('home')} className="p-2 -ml-2 rounded-full hover:bg-gray-200/50 transition-colors text-gray-400 hover:text-gray-900">
+                <ArrowLeft size={20} />
+              </button>
+            )}
+            <h1 className={`text-2xl font-black italic tracking-tighter uppercase ${currentView === 'home' ? 'text-emerald-600' : 'text-gray-900'}`}>
+              {getHeaderTitle()}
+            </h1>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            {user?.email === ADMIN_EMAIL && (
+              <button onClick={() => setCurrentView('admin')} className="p-2 text-purple-600 hover:bg-purple-100 rounded-full transition-colors">
+                <Settings size={20} />
+              </button>
+            )}
+            {user && (
+              <button onClick={() => supabase.auth.signOut()} className="text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-red-500 transition-colors px-2">
+                Sign Out
+              </button>
+            )}
           </div>
         </div>
-      </nav>
+      </header>
 
-      <main className="max-w-5xl mx-auto px-4 py-8 w-full flex-grow flex flex-col">
-        {currentView === 'signin' && (
-          <div className="flex-grow flex items-center justify-center py-12">
-            <div className="w-full max-w-md bg-white p-8 rounded-[2.5rem] shadow-2xl border border-gray-100 text-center">
-              <h1 className="text-3xl font-black text-gray-900 mb-2">{isSignUpMode ? 'Create Account' : 'Welcome Back'}</h1>
-              <p className="text-gray-400 font-bold text-xs uppercase tracking-widest mb-8">{isSignUpMode ? 'Join the network' : 'Enter details to continue'}</p>
-              {authError && <div className="mb-6 p-4 bg-red-50 border border-red-100 text-red-600 text-xs font-bold rounded-xl">{String(authError)}</div>}
-              <form onSubmit={handleEmailAuth} className="space-y-4 text-left">
-                <input type="email" placeholder="Email" required className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-100 outline-none focus:border-emerald-500 text-sm" value={email} onChange={e => setEmail(e.target.value)} />
-                <input type="password" placeholder="Password" required className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-100 outline-none focus:border-emerald-500 text-sm" value={password} onChange={e => setPassword(e.target.value)} />
-                {isSignUpMode && <input type="password" placeholder="Confirm Password" required className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-100 outline-none focus:border-emerald-500 text-sm" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} />}
-                <button type="submit" disabled={authSubmitting} className="w-full bg-emerald-600 text-white py-3.5 rounded-2xl font-black shadow-lg hover:bg-emerald-500 transition-all uppercase tracking-widest text-xs disabled:opacity-50 active:scale-95">{authSubmitting ? '...' : (isSignUpMode ? 'Sign Up' : 'Sign In')}</button>
-              </form>
-              <button onClick={handleOAuthSignIn} disabled={authSubmitting} className="mt-4 w-full flex items-center justify-center gap-3 bg-white border-2 border-gray-100 py-3.5 rounded-2xl font-bold text-gray-700 hover:bg-gray-50 transition-all shadow-sm active:scale-95">Google Login</button>
-              <div className="mt-8 pt-6 border-t border-gray-50"><button onClick={() => setIsSignUpMode(!isSignUpMode)} className="text-xs font-black text-emerald-600 uppercase tracking-wider transition-colors hover:text-emerald-700">{isSignUpMode ? 'Back to Sign In' : "Join Network"}</button></div>
-            </div>
-          </div>
-        )}
-
-        {currentView === 'home' && (
-          <div className="space-y-10 animate-in fade-in duration-500">
-            <div className="grid md:grid-cols-3 gap-6 items-stretch">
-              <div className="flex flex-col bg-emerald-600 p-6 rounded-3xl shadow-lg border border-emerald-700 text-white group cursor-pointer hover:-translate-y-1 transition-all" onClick={() => navigateTo('search')}>
-                <h3 className="font-black text-xl mb-2">Find Files</h3>
-                <p className="text-sm text-emerald-50 mb-6 opacity-90 leading-relaxed">Search MakerWorld & Thingiverse.</p>
-                <button className="mt-auto w-full bg-white text-emerald-700 py-2.5 rounded-xl text-sm font-black transition-colors">Search Library</button>
-              </div>
-              <div className="flex flex-col bg-white p-6 rounded-3xl shadow-sm border border-gray-200 hover:border-emerald-500 group cursor-pointer hover:-translate-y-1 transition-all" onClick={() => navigateTo('adjust')}>
-                <h3 className="font-black text-xl text-gray-900 mb-2">Upload & Print</h3>
-                <p className="text-sm text-gray-500 mb-6 leading-relaxed">Configure materials and scale for pricing.</p>
-                <button className="mt-auto w-full bg-gray-900 text-white py-2.5 rounded-xl text-sm font-black hover:bg-gray-800 transition-colors">Start Quote</button>
-              </div>
-              <div className="flex flex-col bg-white p-6 rounded-3xl shadow-sm border border-gray-200 hover:border-emerald-500 group cursor-pointer hover:-translate-y-1 transition-all" onClick={() => navigateTo('store')}>
-                <h3 className="font-black text-xl text-gray-900 mb-2">Parts Store</h3>
-                <p className="text-sm text-gray-500 mb-6 leading-relaxed">Browse ready-to-print utility parts.</p>
-                <button className="mt-auto w-full bg-white border-2 border-gray-100 text-gray-700 py-2 rounded-xl text-sm font-black hover:bg-gray-50 transition-all">Browse Shop</button>
+      {/* Scrollable Content Area */}
+      <main className="flex-1 overflow-y-auto w-full pb-32">
+        <div className="max-w-4xl mx-auto px-4 w-full h-full">
+          
+          {currentView === 'signin' && (
+            <div className="h-full flex items-center justify-center animate-in slide-in-from-bottom-8 duration-500">
+              <div className="w-full max-w-md bg-white p-8 rounded-[2.5rem] shadow-xl border border-gray-100 text-center">
+                <div className="w-16 h-16 bg-emerald-50 rounded-2xl flex items-center justify-center mx-auto mb-6 text-emerald-500">
+                  <User size={32} />
+                </div>
+                <h2 className="text-3xl font-black text-gray-900 mb-2">{isSignUpMode ? 'Create Account' : 'Welcome Back'}</h2>
+                <p className="text-gray-400 font-bold text-xs uppercase tracking-widest mb-8">{isSignUpMode ? 'Join the network' : 'Enter details to continue'}</p>
+                {authError && <div className="mb-6 p-4 bg-red-50 border border-red-100 text-red-600 text-xs font-bold rounded-xl">{String(authError)}</div>}
+                <form onSubmit={handleEmailAuth} className="space-y-4 text-left">
+                  <input type="email" placeholder="Email Address" required className="w-full px-5 py-4 rounded-2xl bg-gray-50 border border-gray-100 outline-none focus:border-emerald-500 text-sm font-medium transition-all" value={email} onChange={e => setEmail(e.target.value)} />
+                  <input type="password" placeholder="Password" required className="w-full px-5 py-4 rounded-2xl bg-gray-50 border border-gray-100 outline-none focus:border-emerald-500 text-sm font-medium transition-all" value={password} onChange={e => setPassword(e.target.value)} />
+                  {isSignUpMode && <input type="password" placeholder="Confirm Password" required className="w-full px-5 py-4 rounded-2xl bg-gray-50 border border-gray-100 outline-none focus:border-emerald-500 text-sm font-medium transition-all" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} />}
+                  <button type="submit" disabled={authSubmitting} className="w-full bg-emerald-600 text-white py-4 rounded-2xl font-black shadow-lg shadow-emerald-600/20 hover:bg-emerald-500 transition-all uppercase tracking-widest text-xs disabled:opacity-50 active:scale-95">{authSubmitting ? '...' : (isSignUpMode ? 'Sign Up' : 'Sign In')}</button>
+                </form>
+                <button onClick={handleOAuthSignIn} disabled={authSubmitting} className="mt-4 w-full flex items-center justify-center gap-3 bg-white border-2 border-gray-100 py-4 rounded-2xl font-bold text-gray-700 hover:bg-gray-50 transition-all active:scale-95 text-sm">Continue with Google</button>
+                <div className="mt-8 pt-6 border-t border-gray-50"><button onClick={() => setIsSignUpMode(!isSignUpMode)} className="text-xs font-black text-emerald-600 uppercase tracking-wider transition-colors hover:text-emerald-700">{isSignUpMode ? 'Back to Sign In' : "Join Network"}</button></div>
               </div>
             </div>
-            <div className="bg-gray-900 rounded-[2rem] p-8 text-white flex flex-col md:flex-row items-center justify-between gap-8 shadow-2xl relative overflow-hidden text-center md:text-left">
-              <div><h3 className="font-black text-2xl mb-3">Own a printer? Join the network.</h3><p className="text-gray-400 text-sm max-w-lg leading-relaxed">Add your machine to our manufacturing pool. Receive verified jobs and earn money.</p></div>
-              <button onClick={() => navigateTo('partner')} className="whitespace-nowrap bg-emerald-600 text-white px-8 py-4 rounded-2xl font-black text-sm hover:bg-emerald-50 transition-all">Register Printer</button>
-            </div>
-          </div>
-        )}
+          )}
 
-        {currentView === 'store' && (
-          <div className="max-w-4xl mx-auto w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <header className="flex items-center justify-between"><button onClick={() => setCurrentView('home')} className="text-xs font-black text-gray-400 hover:text-emerald-600 transition-colors">&larr; BACK</button><h2 className="text-4xl font-black italic tracking-tighter uppercase">Parts Store</h2></header>
-            <div className="bg-white rounded-[3rem] p-20 text-center border border-gray-100 shadow-sm flex flex-col items-center">
-              <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-6 border border-gray-100">
-                <svg className="w-10 h-10 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
+          {currentView === 'home' && (
+            <div className="space-y-6 animate-in fade-in duration-500 pb-12">
+              <div className="bg-gray-900 rounded-[2.5rem] p-8 md:p-10 text-white flex flex-col md:flex-row items-center justify-between gap-8 shadow-2xl relative overflow-hidden">
+                <div className="absolute top-0 right-0 -mt-10 -mr-10 w-40 h-40 bg-emerald-500/20 rounded-full blur-3xl"></div>
+                <div className="relative z-10 text-center md:text-left">
+                  <h3 className="font-black text-3xl mb-3 tracking-tight">Turn pixels into plastic.</h3>
+                  <p className="text-gray-400 text-sm max-w-md leading-relaxed">Upload your 3D files and get them printed by our decentralized network of premium partners.</p>
+                </div>
+                <button onClick={() => navigateTo('adjust')} className="relative z-10 whitespace-nowrap bg-emerald-600 text-white px-8 py-4 rounded-2xl font-black text-sm shadow-lg shadow-emerald-900/50 active:scale-95 transition-all">Start Printing</button>
               </div>
-              <h3 className="text-2xl font-black text-gray-900 mb-2 uppercase tracking-tight">Store is Empty</h3>
-              <p className="text-gray-400 font-bold max-w-md mx-auto leading-relaxed">Popular and highly purchased prints will automatically appear here as the network grows.</p>
-            </div>
-          </div>
-        )}
 
-        {currentView === 'search' && (
-          <div className="max-w-4xl mx-auto w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <header className="text-center relative"><button onClick={() => setCurrentView('home')} className="absolute left-0 top-1/2 -translate-y-1/2 text-xs font-black text-gray-400 hover:text-emerald-600 transition-colors">&larr; BACK</button><h2 className="text-4xl font-black italic tracking-tighter uppercase">Find Files</h2></header>
-            <div className="grid md:grid-cols-2 gap-8">
-              <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm space-y-6 flex flex-col justify-center text-center">
-                <h3 className="font-black text-lg">1. Browse Repositories</h3>
-                <input type="text" placeholder="e.g. GoPro Mount..." className="w-full px-6 py-4 rounded-2xl bg-gray-50 border border-gray-100 outline-none font-bold text-center" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
-                <div className="flex gap-4">
-                  <button onClick={() => window.open(`https://makerworld.com/en/search/models?keyword=${encodeURIComponent(searchQuery)}`)} className="flex-1 p-4 bg-emerald-50 text-emerald-700 font-black text-[10px] uppercase tracking-widest rounded-2xl hover:bg-emerald-100 transition-all">MakerWorld</button>
-                  <button onClick={() => window.open(`https://www.thingiverse.com/search?q=${encodeURIComponent(searchQuery)}`)} className="flex-1 p-4 bg-blue-50 text-blue-700 font-black text-[10px] uppercase tracking-widest rounded-2xl hover:bg-blue-100 transition-all">Thingiverse</button>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="bg-white p-8 rounded-[2rem] shadow-sm border border-gray-100 active:scale-[0.98] transition-all cursor-pointer group" onClick={() => navigateTo('search')}>
+                  <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600 mb-6 group-hover:scale-110 transition-transform"><Search size={24} /></div>
+                  <h3 className="font-black text-xl text-gray-900 mb-2">Find Files</h3>
+                  <p className="text-sm text-gray-500 leading-relaxed">Search repositories like MakerWorld & Thingiverse directly from the app.</p>
+                </div>
+                
+                <div className="bg-white p-8 rounded-[2rem] shadow-sm border border-gray-100 active:scale-[0.98] transition-all cursor-pointer group" onClick={() => navigateTo('store')}>
+                  <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 mb-6 group-hover:scale-110 transition-transform"><Store size={24} /></div>
+                  <h3 className="font-black text-xl text-gray-900 mb-2">Parts Store</h3>
+                  <p className="text-sm text-gray-500 leading-relaxed">Browse curated, ready-to-print utility parts and popular models.</p>
                 </div>
               </div>
-              <div className="bg-emerald-600 p-8 rounded-[2.5rem] shadow-xl text-white space-y-6 text-center">
-                <h3 className="font-black text-lg">2. Add to Cart</h3>
-                <form onSubmit={handleImport} className="space-y-4">
-                  <input type="url" required placeholder="Paste URL..." className="w-full px-6 py-4 rounded-2xl bg-white/10 border border-white/20 outline-none font-bold text-sm text-center placeholder:text-white/40" value={importUrl} onChange={e => setImportUrl(e.target.value)} />
-                  <button type="submit" className="w-full bg-white text-emerald-700 py-4 rounded-2xl font-black uppercase tracking-widest text-xs active:scale-95 transition-all">ADD TO CART</button>
-                </form>
+
+              <div className="bg-white p-8 rounded-[2rem] shadow-sm border border-gray-100 text-center sm:text-left flex flex-col sm:flex-row items-center justify-between gap-6">
+                <div>
+                  <h3 className="font-black text-lg text-gray-900 mb-1">Own a 3D printer?</h3>
+                  <p className="text-sm text-gray-500">Add your machine to the pool and earn money fulfilling jobs.</p>
+                </div>
+                <button onClick={() => navigateTo('partner')} className="bg-gray-100 text-gray-900 px-6 py-3 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-gray-200 transition-colors w-full sm:w-auto">Register Partner</button>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {currentView === 'adjust' && (
-          <div className="max-w-4xl mx-auto w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <header className="flex items-center justify-between"><button onClick={() => { setUploadedFile(null); setCurrentView('home'); }} className="text-xs font-black text-gray-400 hover:text-emerald-600 transition-colors">&larr; BACK</button><h2 className="text-4xl font-black italic tracking-tighter uppercase">Upload & Print</h2></header>
-            {!uploadedFile ? (
-              <div onClick={() => fileInputRef.current?.click()} className="group w-full min-h-[500px] border-4 border-dashed border-gray-200 rounded-[3rem] bg-white flex flex-col items-center justify-center p-20 text-center cursor-pointer hover:border-emerald-500/50 transition-all duration-500">
-                <input type="file" ref={fileInputRef} className="hidden" accept=".stl,.3mf,.step,.stp" onChange={handleFileUpload} />
-                <div className="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center mb-8 border border-gray-100 hover:scale-110 hover:bg-emerald-100 transition-all shadow-sm"><svg className="w-10 h-10 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg></div>
-                <h3 className="text-2xl font-black text-gray-900 mb-2 uppercase tracking-tighter italic">Drop 3D File Here</h3>
+          {currentView === 'store' && (
+            <div className="h-full flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="flex-1 bg-white rounded-[3rem] p-12 text-center border border-gray-100 shadow-sm flex flex-col items-center justify-center min-h-[50vh]">
+                <div className="w-24 h-24 bg-gray-50 rounded-[2rem] flex items-center justify-center mb-6 border border-gray-100 text-gray-300">
+                  <Store size={40} />
+                </div>
+                <h3 className="text-2xl font-black text-gray-900 mb-3 uppercase tracking-tight">Store is Empty</h3>
+                <p className="text-gray-400 font-medium text-sm max-w-sm mx-auto leading-relaxed">Popular and highly purchased prints will automatically appear here as the network grows.</p>
               </div>
-            ) : ( <ThreeDViewer file={uploadedFile} onClear={() => setUploadedFile(null)} onAddToCart={handleAddToCartFromConfig} /> )}
-          </div>
-        )}
+            </div>
+          )}
 
-        {currentView === 'cart' && (
-          <div className="max-w-4xl mx-auto w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <header className="flex items-center justify-between"><button onClick={() => setCurrentView('home')} className="text-xs font-black text-gray-400 hover:text-emerald-600 transition-colors">&larr; BACK</button><h2 className="text-4xl font-black italic tracking-tighter uppercase text-right">Quote Request</h2></header>
-            {cart.length === 0 ? (
-              <div className="bg-white rounded-[3rem] p-20 text-center border border-gray-100 shadow-sm">
-                <p className="text-gray-400 font-bold mb-4">Your cart is empty.</p>
-                <button onClick={() => setCurrentView('search')} className="text-emerald-600 font-black text-[10px] uppercase tracking-widest border-b-2 border-emerald-500 pb-1">Start Discovering</button>
+          {currentView === 'search' && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="bg-white p-8 md:p-12 rounded-[3rem] border border-gray-100 shadow-sm space-y-8 text-center">
+                <div className="max-w-md mx-auto space-y-6">
+                  <h3 className="font-black text-xl uppercase tracking-tight">Search Repositories</h3>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-6 flex items-center pointer-events-none text-gray-400">
+                      <Search size={20} />
+                    </div>
+                    <input type="text" placeholder="e.g. GoPro Mount..." className="w-full pl-14 pr-6 py-5 rounded-2xl bg-gray-50 border border-gray-100 outline-none font-bold text-gray-900 focus:border-emerald-500 transition-colors shadow-inner" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
+                  </div>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <button onClick={() => window.open(`https://makerworld.com/en/search/models?keyword=${encodeURIComponent(searchQuery)}`)} className="flex-1 py-4 bg-emerald-50 text-emerald-700 font-black text-[10px] uppercase tracking-widest rounded-2xl hover:bg-emerald-100 transition-all active:scale-95">MakerWorld</button>
+                    <button onClick={() => window.open(`https://www.thingiverse.com/search?q=${encodeURIComponent(searchQuery)}`)} className="flex-1 py-4 bg-blue-50 text-blue-700 font-black text-[10px] uppercase tracking-widest rounded-2xl hover:bg-blue-100 transition-all active:scale-95">Thingiverse</button>
+                  </div>
+                </div>
               </div>
-            ) : (
-              <div className="grid lg:grid-cols-3 gap-8 items-start">
-                <div className="lg:col-span-2 space-y-4">
-                  {cart.map(item => (
-                    <div key={item.id} className="bg-white p-6 rounded-3xl border border-gray-100 flex flex-col gap-4 shadow-sm hover:border-emerald-500/40 transition-all">
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-gray-50 rounded-xl flex items-center justify-center text-emerald-500 border border-gray-100">
-                          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
+
+              <div className="bg-gray-900 p-8 md:p-12 rounded-[3rem] shadow-xl text-white text-center">
+                <div className="max-w-md mx-auto space-y-6">
+                  <h3 className="font-black text-xl uppercase tracking-tight text-emerald-400">Import via URL</h3>
+                  <p className="text-gray-400 text-sm">Found exactly what you need? Paste the link directly.</p>
+                  <form onSubmit={handleImport} className="space-y-4">
+                    <input type="url" required placeholder="https://..." className="w-full px-6 py-5 rounded-2xl bg-white/10 border border-white/20 outline-none font-bold text-sm text-center placeholder:text-white/40 focus:border-emerald-500 transition-colors" value={importUrl} onChange={e => setImportUrl(e.target.value)} />
+                    <button type="submit" className="w-full bg-emerald-600 text-white py-5 rounded-2xl font-black uppercase tracking-widest text-xs shadow-lg shadow-emerald-900/50 hover:bg-emerald-500 active:scale-95 transition-all">Add to Cart</button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {currentView === 'adjust' && (
+            <div className="h-full min-h-[60vh] animate-in fade-in slide-in-from-bottom-4 duration-500 flex flex-col">
+              {!uploadedFile ? (
+                <div onClick={() => fileInputRef.current?.click()} className="flex-1 group w-full border-4 border-dashed border-gray-200 rounded-[3rem] bg-white flex flex-col items-center justify-center p-12 text-center cursor-pointer hover:border-emerald-500/50 hover:bg-emerald-50/30 transition-all duration-300">
+                  <input type="file" ref={fileInputRef} className="hidden" accept=".stl,.3mf,.step,.stp" onChange={handleFileUpload} />
+                  <div className="w-24 h-24 bg-gray-50 rounded-[2rem] flex items-center justify-center mb-8 border border-gray-100 group-hover:scale-110 group-hover:bg-emerald-100 transition-all shadow-sm">
+                    <Plus size={40} className="text-gray-400 group-hover:text-emerald-600 transition-colors" />
+                  </div>
+                  <h3 className="text-2xl font-black text-gray-900 mb-3 uppercase tracking-tighter italic">Drop 3D File Here</h3>
+                  <p className="text-gray-400 font-medium text-sm">Supports .STL, .3MF, .STEP</p>
+                </div>
+              ) : ( 
+                <div className="flex-1"><ThreeDViewer file={uploadedFile} onClear={() => setUploadedFile(null)} onAddToCart={handleAddToCartFromConfig} /></div>
+              )}
+            </div>
+          )}
+
+          {currentView === 'cart' && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              {cart.length === 0 ? (
+                <div className="bg-white rounded-[3rem] p-20 text-center border border-gray-100 shadow-sm flex flex-col items-center">
+                  <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-6 text-gray-300">
+                    <ShoppingCart size={32} />
+                  </div>
+                  <p className="text-gray-900 font-black text-xl uppercase mb-6 tracking-tight">Your cart is empty</p>
+                  <button onClick={() => navigateTo('search')} className="bg-gray-900 text-white px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest active:scale-95 transition-all">Start Discovering</button>
+                </div>
+              ) : (
+                <div className="flex flex-col lg:flex-row gap-6 items-start">
+                  <div className="w-full lg:flex-1 space-y-4">
+                    {cart.map(item => (
+                      <div key={item.id} className="bg-white p-6 rounded-[2rem] border border-gray-100 flex flex-col gap-4 shadow-sm hover:border-emerald-500/30 transition-all">
+                        <div className="flex items-center gap-4">
+                          <div className="w-14 h-14 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600 border border-emerald-100/50 flex-shrink-0">
+                            <Store size={24} />
+                          </div>
+                          <div className="flex-grow min-w-0">
+                            <h4 className="font-black text-gray-900 truncate uppercase text-sm tracking-tight">{item.name}</h4>
+                            <p className="text-[10px] font-bold text-gray-400 uppercase mt-0.5">{item.source}</p>
+                          </div>
+                          <button onClick={() => setCart(cart.filter(i => i.id !== item.id))} className="text-[10px] font-black bg-red-50 text-red-600 px-3 py-2 rounded-xl hover:bg-red-100 uppercase tracking-widest transition-colors flex-shrink-0">Remove</button>
                         </div>
-                        <div className="flex-grow">
-                          <h4 className="font-black text-gray-900 truncate uppercase text-sm tracking-tight">{item.name}</h4>
-                          <p className="text-[10px] font-bold text-gray-400 uppercase">{item.source}</p>
-                        </div>
-                        <button onClick={() => setCart(cart.filter(i => i.id !== item.id))} className="text-[10px] font-black text-gray-300 hover:text-red-500 uppercase tracking-widest transition-colors">Remove</button>
-                      </div>
-                      
-                      <div className="grid grid-cols-1 gap-3 p-4 bg-gray-50 rounded-2xl border border-gray-100 mt-2">
-                        <div>
-                          <label className="block text-[10px] font-black text-gray-400 uppercase mb-1">Search Material</label>
-                          <input 
-                            type="text" 
-                            disabled
-                            placeholder="Awaiting Partners..."
-                            className="w-full bg-white border border-gray-200 rounded-lg p-2 text-[10px] font-bold outline-none opacity-50 cursor-not-allowed"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-[10px] font-black text-gray-400 uppercase mb-1">Available Colors</label>
-                          <div className="w-full bg-gray-100 border border-gray-200 rounded-lg p-2 text-[10px] text-gray-400 italic opacity-50 cursor-not-allowed">
-                            Requires Material Selection
+                        
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 bg-gray-50 rounded-2xl border border-gray-100/50">
+                          <div>
+                            <label className="block text-[10px] font-black text-gray-400 uppercase mb-2">Search Material</label>
+                            <input 
+                              type="text" 
+                              disabled
+                              placeholder="Awaiting Partners..."
+                              className="w-full bg-white border border-gray-200 rounded-xl p-3 text-xs font-bold outline-none opacity-50 cursor-not-allowed shadow-sm"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] font-black text-gray-400 uppercase mb-2">Available Colors</label>
+                            <div className="w-full bg-gray-100 border border-gray-200 rounded-xl p-3 text-xs text-gray-400 italic opacity-50 cursor-not-allowed shadow-inner flex items-center">
+                              Requires Material Selection
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="bg-gray-900 rounded-[2.5rem] p-8 text-white space-y-6 shadow-2xl sticky top-24">
-                  <h3 className="font-black uppercase text-xs tracking-[0.2em] border-b border-white/10 pb-4">Quote Summary</h3>
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <span className="font-black uppercase text-sm tracking-widest">Total</span>
-                      <span className="text-xl font-black text-emerald-500 italic">PENDING</span>
-                    </div>
-                    <p className="text-[10px] text-gray-400 font-bold leading-relaxed">Price is calculated after a partner reviews your material and color requirements.</p>
+                    ))}
                   </div>
-                  <button className="w-full bg-emerald-600 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs shadow-lg hover:bg-emerald-500 transition-all">Request Quote</button>
+
+                  <div className="w-full lg:w-80 bg-gray-900 rounded-[2.5rem] p-8 text-white space-y-6 shadow-2xl lg:sticky lg:top-24 flex-shrink-0">
+                    <h3 className="font-black uppercase text-xs tracking-[0.2em] border-b border-white/10 pb-4">Quote Summary</h3>
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center">
+                        <span className="font-black uppercase text-sm tracking-widest text-gray-300">Total</span>
+                        <span className="text-xl font-black text-emerald-400 italic tracking-tighter">PENDING</span>
+                      </div>
+                      <p className="text-[10px] text-gray-400 font-medium leading-relaxed bg-white/5 p-4 rounded-xl border border-white/5">Price is calculated dynamically after a partner reviews your specific material and scale requirements.</p>
+                    </div>
+                    <button className="w-full bg-emerald-600 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs shadow-lg shadow-emerald-900/50 hover:bg-emerald-500 active:scale-95 transition-all">Request Quote</button>
+                  </div>
                 </div>
-              </div>
-            )}
-          </div>
-        )}
+              )}
+            </div>
+          )}
+
+        </div>
       </main>
+
+      {/* Floating App Dock (Bottom Navigation) */}
+      <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 w-[90%] max-w-[400px]">
+        <nav className="bg-gray-900/95 backdrop-blur-xl border border-white/10 p-2.5 rounded-[2rem] shadow-2xl flex items-center justify-between px-4 relative">
+          
+          <button 
+            onClick={() => navigateTo('home')} 
+            className={`p-3 rounded-2xl transition-all duration-300 flex flex-col items-center gap-1 ${currentView === 'home' ? 'text-emerald-400 bg-white/10 scale-110' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
+          >
+            <Home size={22} strokeWidth={currentView === 'home' ? 2.5 : 2} />
+          </button>
+          
+          <button 
+            onClick={() => navigateTo('search')} 
+            className={`p-3 rounded-2xl transition-all duration-300 flex flex-col items-center gap-1 ${currentView === 'search' ? 'text-emerald-400 bg-white/10 scale-110' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
+          >
+            <Search size={22} strokeWidth={currentView === 'search' ? 2.5 : 2} />
+          </button>
+
+          {/* Floating Action Button for main action (Upload/Adjust) */}
+          <div className="relative -top-8 px-2">
+            <button 
+              onClick={() => navigateTo('adjust')} 
+              className="bg-emerald-500 hover:bg-emerald-400 text-white p-4 rounded-full shadow-lg shadow-emerald-900/50 border-[6px] border-gray-50 transition-transform active:scale-90"
+            >
+              <Plus size={28} strokeWidth={3} />
+            </button>
+          </div>
+          
+          <button 
+            onClick={() => navigateTo('cart')} 
+            className={`p-3 rounded-2xl transition-all duration-300 flex flex-col items-center gap-1 relative ${currentView === 'cart' ? 'text-emerald-400 bg-white/10 scale-110' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
+          >
+            <ShoppingCart size={22} strokeWidth={currentView === 'cart' ? 2.5 : 2} />
+            {cart.length > 0 && (
+              <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 border-2 border-gray-900 rounded-full"></span>
+            )}
+          </button>
+
+          <button 
+            onClick={() => navigateTo('signin')} 
+            className={`p-3 rounded-2xl transition-all duration-300 flex flex-col items-center gap-1 ${['signin', 'partner', 'admin'].includes(currentView) ? 'text-emerald-400 bg-white/10 scale-110' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
+          >
+            <User size={22} strokeWidth={['signin', 'partner', 'admin'].includes(currentView) ? 2.5 : 2} />
+          </button>
+
+        </nav>
+      </div>
     </div>
   );
 }
