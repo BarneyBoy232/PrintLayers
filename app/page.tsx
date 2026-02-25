@@ -25,8 +25,9 @@ interface CartItem {
 type View = 'home' | 'search' | 'adjust' | 'store' | 'partner' | 'signin' | 'cart' | 'admin';
 
 // Shared Constants for consistency between Viewer and Cart
-const MATERIALS: string[] = []; // Intentionally empty: Will be filled by active partners
-const COLORS: string[] = []; // Intentionally empty: Will be filled by active partners
+// Colors are now directly linked to specific materials. 
+// e.g. { 'PLA': ['Black', 'White'], 'Carbon Fiber': ['Grey'] }
+const PARTNER_FILAMENTS: Record<string, string[]> = {}; 
 
 // --- Integrated 3D Viewer / Configurator ---
 function ThreeDViewer({ file, onClear, onAddToCart }: { file: File, onClear: () => void, onAddToCart: (config: { price: string, material: string, color: string, weight: number }) => void }) {
@@ -64,20 +65,31 @@ function ThreeDViewer({ file, onClear, onAddToCart }: { file: File, onClear: () 
         ) : (
           <div className="absolute inset-0 p-8 flex flex-col md:flex-row gap-8 bg-gray-900/95 backdrop-blur-md">
             <div className="flex-1 rounded-2xl bg-black/40 border border-white/5 flex items-center justify-center text-emerald-500 font-black italic">3D PREVIEW ENGINE</div>
-            <div className="w-full md:w-80 space-y-6">
+            <div className="w-full md:w-80 space-y-6 overflow-y-auto pr-2">
               <div className="space-y-4">
                 <h3 className="text-white font-black uppercase text-sm tracking-widest border-b border-white/10 pb-2">Print Config</h3>
-                <div>
-                  <label className="block text-[10px] font-black text-gray-500 uppercase mb-2">Material</label>
-                  <select disabled value={material} onChange={(e) => setMaterial(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white text-xs outline-none opacity-50 cursor-not-allowed">
-                    {MATERIALS.length > 0 ? MATERIALS.map(m => <option key={m} value={m} className="bg-gray-900">{m}</option>) : <option>Awaiting Partners...</option>}
-                  </select>
+                
+                <div className="space-y-3 p-4 bg-black/20 rounded-xl border border-white/5">
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-500 uppercase mb-2">Search Material</label>
+                    <input 
+                      type="text" 
+                      disabled 
+                      placeholder="Awaiting Partners..." 
+                      className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white text-xs outline-none opacity-50 cursor-not-allowed"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-500 uppercase mb-2">Available Colors</label>
+                    <div className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-gray-500 text-xs italic opacity-50 cursor-not-allowed">
+                      Requires Material Selection
+                    </div>
+                  </div>
                 </div>
+
                 <div>
-                  <label className="block text-[10px] font-black text-gray-500 uppercase mb-2">Color</label>
-                  <select disabled value={color} onChange={(e) => setColor(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white text-xs outline-none opacity-50 cursor-not-allowed">
-                    {COLORS.length > 0 ? COLORS.map(c => <option key={c} value={c} className="bg-gray-900">{c}</option>) : <option>Awaiting Partners...</option>}
-                  </select>
+                  <label className="block text-[10px] font-black text-gray-500 uppercase mb-2">Estimated Weight (g)</label>
+                  <input type="number" value={weight} onChange={(e) => setWeight(Number(e.target.value))} className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white text-xs outline-none" />
                 </div>
               </div>
               <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
@@ -192,8 +204,8 @@ export default function App() {
       source: importUrl.includes('makerworld') ? 'MakerWorld' : 'Thingiverse', 
       url: importUrl,
       price: 'Pending',
-      material: 'PLA',
-      color: 'Black',
+      material: '',
+      color: '',
       weight: 0
     }]);
     setImportUrl('');
@@ -355,28 +367,21 @@ export default function App() {
                         <button onClick={() => setCart(cart.filter(i => i.id !== item.id))} className="text-[10px] font-black text-gray-300 hover:text-red-500 uppercase tracking-widest transition-colors">Remove</button>
                       </div>
                       
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 gap-3 p-4 bg-gray-50 rounded-2xl border border-gray-100 mt-2">
                         <div>
-                          <label className="block text-[10px] font-black text-gray-400 uppercase mb-1">Material</label>
-                          <select 
+                          <label className="block text-[10px] font-black text-gray-400 uppercase mb-1">Search Material</label>
+                          <input 
+                            type="text" 
                             disabled
-                            value={item.material} 
-                            onChange={(e) => updateCartItem(item.id, { material: e.target.value })}
-                            className="w-full bg-gray-50 border border-gray-100 rounded-lg p-2 text-[10px] font-bold outline-none opacity-50 cursor-not-allowed"
-                          >
-                            {MATERIALS.length > 0 ? MATERIALS.map(m => <option key={m} value={m}>{m}</option>) : <option>Awaiting Partners</option>}
-                          </select>
+                            placeholder="Awaiting Partners..."
+                            className="w-full bg-white border border-gray-200 rounded-lg p-2 text-[10px] font-bold outline-none opacity-50 cursor-not-allowed"
+                          />
                         </div>
                         <div>
-                          <label className="block text-[10px] font-black text-gray-400 uppercase mb-1">Color</label>
-                          <select 
-                            disabled
-                            value={item.color} 
-                            onChange={(e) => updateCartItem(item.id, { color: e.target.value })}
-                            className="w-full bg-gray-50 border border-gray-100 rounded-lg p-2 text-[10px] font-bold outline-none opacity-50 cursor-not-allowed"
-                          >
-                            {COLORS.length > 0 ? COLORS.map(c => <option key={c} value={c}>{c}</option>) : <option>Awaiting Partners</option>}
-                          </select>
+                          <label className="block text-[10px] font-black text-gray-400 uppercase mb-1">Available Colors</label>
+                          <div className="w-full bg-gray-100 border border-gray-200 rounded-lg p-2 text-[10px] text-gray-400 italic opacity-50 cursor-not-allowed">
+                            Requires Material Selection
+                          </div>
                         </div>
                       </div>
                     </div>
