@@ -48,7 +48,7 @@ function ThreeDViewer({ file, onClear, onAddToCart }: { file: File, onClear: () 
 
   return (
     <div className="w-full h-full space-y-6 animate-in zoom-in-95 duration-500 flex flex-col">
-      <div className="w-full flex-1 min-h-[500px] bg-black/40 backdrop-blur-2xl rounded-[3rem] overflow-hidden relative border border-white/10 shadow-2xl flex flex-col">
+      <div className="w-full flex-1 min-h-[500px] bg-white/[0.03] backdrop-blur-2xl rounded-[3rem] overflow-hidden relative border border-white/10 shadow-2xl flex flex-col">
         {!showConfig ? (
           <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-12">
             <div className="w-24 h-24 bg-emerald-500/10 rounded-3xl flex items-center justify-center mb-8 animate-pulse border border-emerald-500/20 shadow-[0_0_40px_rgba(16,185,129,0.2)]">
@@ -64,7 +64,7 @@ function ThreeDViewer({ file, onClear, onAddToCart }: { file: File, onClear: () 
             </div>
           </div>
         ) : (
-          <div className="absolute inset-0 p-6 md:p-8 flex flex-col md:flex-row gap-6 md:gap-8 bg-black/60 backdrop-blur-xl">
+          <div className="absolute inset-0 p-6 md:p-8 flex flex-col md:flex-row gap-6 md:gap-8 bg-black/40 backdrop-blur-xl">
             <div className="flex-1 rounded-[2rem] bg-gradient-to-br from-white/5 to-transparent border border-white/5 flex items-center justify-center text-emerald-500/50 font-black italic text-2xl tracking-widest shadow-inner">
               3D PREVIEW ENGINE
             </div>
@@ -261,10 +261,10 @@ export default function App() {
   return (
     <div className="h-screen w-full bg-[#0a0a0a] font-sans text-gray-100 antialiased flex flex-col overflow-hidden relative selection:bg-emerald-500/30">
       
-      {/* Ambient Background Effects */}
-      <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-emerald-600/10 rounded-full blur-[120px] pointer-events-none mix-blend-screen" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-teal-800/10 rounded-full blur-[100px] pointer-events-none mix-blend-screen" />
-      <div className="absolute top-[40%] left-[60%] w-[30%] h-[30%] bg-purple-900/10 rounded-full blur-[100px] pointer-events-none mix-blend-screen" />
+      {/* Ambient Background Effects (Mesh Gradient) */}
+      <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-emerald-600/15 rounded-full blur-[120px] pointer-events-none mix-blend-screen" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-teal-800/15 rounded-full blur-[100px] pointer-events-none mix-blend-screen" />
+      <div className="absolute top-[40%] left-[60%] w-[30%] h-[30%] bg-purple-900/15 rounded-full blur-[100px] pointer-events-none mix-blend-screen" />
 
       {/* Dynamic App Header */}
       <header className="flex-shrink-0 px-6 py-5 bg-black/20 backdrop-blur-2xl z-40 sticky top-0 border-b border-white/5">
@@ -301,8 +301,7 @@ export default function App() {
           
           {currentView === 'signin' && (
             <div className="h-full flex items-center justify-center animate-in slide-in-from-bottom-8 duration-500">
-              <div className="w-full max-w-md bg-gray-900/60 backdrop-blur-3xl p-10 rounded-[3rem] shadow-2xl border border-white/10 text-center relative overflow-hidden">
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-32 bg-emerald-500/20 rounded-full blur-3xl"></div>
+              <div className="w-full max-w-md bg-white/[0.03] backdrop-blur-2xl p-10 rounded-[3rem] shadow-2xl border border-white/10 text-center relative overflow-hidden">
                 <div className="relative z-10">
                   <div className="w-16 h-16 bg-white/5 rounded-[1.5rem] flex items-center justify-center mx-auto mb-6 text-emerald-400 border border-white/10 shadow-inner">
                     <User size={32} />
@@ -325,8 +324,8 @@ export default function App() {
 
           {currentView === 'home' && (
             <div className="space-y-6 md:space-y-8 animate-in fade-in duration-500 pb-12">
-              <div className="bg-gradient-to-br from-emerald-900/40 via-gray-900/60 to-black rounded-[3rem] p-10 md:p-16 border border-emerald-500/20 shadow-2xl relative overflow-hidden backdrop-blur-xl group">
-                <div className="absolute top-0 right-0 -mt-20 -mr-20 w-80 h-80 bg-emerald-500/20 rounded-full blur-[80px] group-hover:bg-emerald-500/30 transition-colors duration-700"></div>
+              <div className="bg-white/[0.03] backdrop-blur-2xl rounded-[3rem] p-10 md:p-16 border border-white/10 shadow-2xl relative overflow-hidden group">
+                <div className="absolute top-0 right-0 -mt-20 -mr-20 w-80 h-80 bg-emerald-500/10 rounded-full blur-[80px] group-hover:bg-emerald-500/20 transition-colors duration-700 pointer-events-none"></div>
                 <div className="relative z-10 text-center md:text-left flex flex-col md:flex-row items-center justify-between gap-10">
                   <div className="max-w-xl">
                     <h3 className="font-black text-4xl md:text-5xl mb-4 tracking-tight text-white leading-tight">Turn pixels into <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-300">plastic.</span></h3>
@@ -337,7 +336,7 @@ export default function App() {
               </div>
 
               <div className="grid md:grid-cols-2 gap-6">
-                <div className="bg-white/5 backdrop-blur-xl p-8 md:p-10 rounded-[2.5rem] shadow-lg border border-white/5 hover:border-emerald-500/30 hover:bg-white/10 active:scale-[0.98] transition-all cursor-pointer group flex flex-col justify-between" onClick={() => navigateTo('search')}>
+                <div className="bg-white/[0.03] backdrop-blur-2xl p-8 md:p-10 rounded-[2.5rem] shadow-lg border border-white/10 hover:border-emerald-500/30 hover:bg-white/5 active:scale-[0.98] transition-all cursor-pointer group flex flex-col justify-between" onClick={() => navigateTo('search')}>
                   <div>
                     <div className="w-14 h-14 bg-white/5 rounded-[1.5rem] flex items-center justify-center text-emerald-400 mb-8 border border-white/10 group-hover:scale-110 transition-transform shadow-inner"><Search size={26} /></div>
                     <h3 className="font-black text-2xl text-white mb-3 tracking-tight">Find Files</h3>
@@ -345,7 +344,7 @@ export default function App() {
                   </div>
                 </div>
                 
-                <div className="bg-white/5 backdrop-blur-xl p-8 md:p-10 rounded-[2.5rem] shadow-lg border border-white/5 hover:border-blue-500/30 hover:bg-white/10 active:scale-[0.98] transition-all cursor-pointer group flex flex-col justify-between" onClick={() => navigateTo('store')}>
+                <div className="bg-white/[0.03] backdrop-blur-2xl p-8 md:p-10 rounded-[2.5rem] shadow-lg border border-white/10 hover:border-blue-500/30 hover:bg-white/5 active:scale-[0.98] transition-all cursor-pointer group flex flex-col justify-between" onClick={() => navigateTo('store')}>
                   <div>
                     <div className="w-14 h-14 bg-white/5 rounded-[1.5rem] flex items-center justify-center text-blue-400 mb-8 border border-white/10 group-hover:scale-110 transition-transform shadow-inner"><Store size={26} /></div>
                     <h3 className="font-black text-2xl text-white mb-3 tracking-tight">Parts Store</h3>
@@ -354,7 +353,7 @@ export default function App() {
                 </div>
               </div>
 
-              <div className="bg-gradient-to-r from-gray-900/80 to-black backdrop-blur-xl p-8 md:p-10 rounded-[2.5rem] shadow-xl border border-white/5 text-center sm:text-left flex flex-col sm:flex-row items-center justify-between gap-8">
+              <div className="bg-white/[0.03] backdrop-blur-2xl p-8 md:p-10 rounded-[2.5rem] shadow-xl border border-white/10 text-center sm:text-left flex flex-col sm:flex-row items-center justify-between gap-8">
                 <div>
                   <h3 className="font-black text-xl text-white mb-2 tracking-tight">Own a 3D printer?</h3>
                   <p className="text-sm text-gray-400 font-medium">Add your machine to the pool and earn money fulfilling jobs.</p>
@@ -366,8 +365,7 @@ export default function App() {
 
           {currentView === 'store' && (
             <div className="h-full flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <div className="flex-1 bg-white/5 backdrop-blur-2xl rounded-[3rem] p-12 text-center border border-white/10 shadow-2xl flex flex-col items-center justify-center min-h-[60vh] relative overflow-hidden">
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-blue-500/10 rounded-full blur-[100px] pointer-events-none"></div>
+              <div className="flex-1 bg-white/[0.03] backdrop-blur-2xl rounded-[3rem] p-12 text-center border border-white/10 shadow-2xl flex flex-col items-center justify-center min-h-[60vh] relative overflow-hidden">
                 <div className="w-28 h-28 bg-white/5 rounded-[2rem] flex items-center justify-center mb-8 border border-white/10 text-gray-500 shadow-inner relative z-10">
                   <Store size={48} strokeWidth={1.5} />
                 </div>
@@ -379,8 +377,7 @@ export default function App() {
 
           {currentView === 'search' && (
             <div className="space-y-6 md:space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <div className="bg-white/5 backdrop-blur-2xl p-8 md:p-14 rounded-[3rem] border border-white/10 shadow-2xl space-y-10 text-center relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-[80px] pointer-events-none"></div>
+              <div className="bg-white/[0.03] backdrop-blur-2xl p-8 md:p-14 rounded-[3rem] border border-white/10 shadow-2xl space-y-10 text-center relative overflow-hidden">
                 <div className="max-w-xl mx-auto space-y-8 relative z-10">
                   <h3 className="font-black text-2xl text-white uppercase tracking-tight flex items-center justify-center gap-3">
                     <Search className="text-emerald-400" /> Search Repositories
@@ -398,7 +395,7 @@ export default function App() {
                 </div>
               </div>
 
-              <div className="bg-gradient-to-br from-gray-900 to-black p-8 md:p-14 rounded-[3rem] shadow-2xl border border-white/5 text-center relative overflow-hidden">
+              <div className="bg-white/[0.03] backdrop-blur-2xl p-8 md:p-14 rounded-[3rem] shadow-2xl border border-white/10 text-center relative overflow-hidden">
                 <div className="max-w-xl mx-auto space-y-8 relative z-10">
                   <h3 className="font-black text-2xl uppercase tracking-tight text-emerald-400">Import via URL</h3>
                   <p className="text-gray-400 text-base font-medium">Found exactly what you need? Paste the link directly.</p>
@@ -414,7 +411,7 @@ export default function App() {
           {currentView === 'adjust' && (
             <div className="h-full min-h-[60vh] animate-in fade-in slide-in-from-bottom-4 duration-500 flex flex-col">
               {!uploadedFile ? (
-                <div onClick={() => fileInputRef.current?.click()} className="flex-1 group w-full border-[3px] border-dashed border-white/10 rounded-[3rem] bg-black/20 backdrop-blur-xl flex flex-col items-center justify-center p-12 text-center cursor-pointer hover:border-emerald-500/50 hover:bg-emerald-500/5 transition-all duration-500">
+                <div onClick={() => fileInputRef.current?.click()} className="flex-1 group w-full border-[3px] border-dashed border-white/10 rounded-[3rem] bg-white/[0.02] backdrop-blur-2xl flex flex-col items-center justify-center p-12 text-center cursor-pointer hover:border-emerald-500/50 hover:bg-white/[0.05] transition-all duration-500">
                   <input type="file" ref={fileInputRef} className="hidden" accept=".stl,.3mf,.step,.stp" onChange={handleFileUpload} />
                   <div className="w-28 h-28 bg-white/5 rounded-[2rem] flex items-center justify-center mb-8 border border-white/10 group-hover:scale-110 group-hover:bg-emerald-500/20 group-hover:border-emerald-500/30 transition-all duration-500 shadow-inner">
                     <Plus size={48} className="text-gray-500 group-hover:text-emerald-400 transition-colors" />
@@ -431,7 +428,7 @@ export default function App() {
           {currentView === 'cart' && (
             <div className="space-y-6 md:space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
               {cart.length === 0 ? (
-                <div className="bg-white/5 backdrop-blur-2xl rounded-[3rem] p-20 text-center border border-white/10 shadow-2xl flex flex-col items-center">
+                <div className="bg-white/[0.03] backdrop-blur-2xl rounded-[3rem] p-20 text-center border border-white/10 shadow-2xl flex flex-col items-center">
                   <div className="w-24 h-24 bg-white/5 rounded-[2rem] flex items-center justify-center mb-8 text-gray-500 border border-white/10 shadow-inner">
                     <ShoppingCart size={40} />
                   </div>
@@ -442,7 +439,7 @@ export default function App() {
                 <div className="flex flex-col xl:flex-row gap-6 md:gap-8 items-start">
                   <div className="w-full xl:flex-1 space-y-4 md:space-y-6">
                     {cart.map(item => (
-                      <div key={item.id} className="bg-white/5 backdrop-blur-xl p-6 md:p-8 rounded-[2.5rem] border border-white/10 flex flex-col gap-6 shadow-xl hover:border-emerald-500/30 transition-all group">
+                      <div key={item.id} className="bg-white/[0.03] backdrop-blur-2xl p-6 md:p-8 rounded-[2.5rem] border border-white/10 flex flex-col gap-6 shadow-xl hover:border-emerald-500/30 transition-all group">
                         <div className="flex items-center gap-5">
                           <div className="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center text-emerald-400 border border-white/10 flex-shrink-0 shadow-inner group-hover:bg-emerald-500/10 transition-colors">
                             <Store size={28} />
@@ -475,8 +472,7 @@ export default function App() {
                     ))}
                   </div>
 
-                  <div className="w-full xl:w-96 bg-gradient-to-b from-gray-900 to-black backdrop-blur-3xl rounded-[3rem] p-8 md:p-10 text-white space-y-8 shadow-2xl border border-white/10 xl:sticky xl:top-28 flex-shrink-0 relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-[50px] pointer-events-none"></div>
+                  <div className="w-full xl:w-96 bg-white/[0.03] backdrop-blur-2xl rounded-[3rem] p-8 md:p-10 text-white space-y-8 shadow-2xl border border-white/10 xl:sticky xl:top-28 flex-shrink-0 relative overflow-hidden">
                     <h3 className="font-black uppercase text-xs tracking-[0.2em] border-b border-white/10 pb-4 relative z-10">Quote Summary</h3>
                     <div className="space-y-6 relative z-10">
                       <div className="flex justify-between items-center bg-white/5 p-6 rounded-[1.5rem] border border-white/5">
