@@ -25,14 +25,14 @@ interface CartItem {
 type View = 'home' | 'search' | 'adjust' | 'store' | 'partner' | 'signin' | 'cart' | 'admin';
 
 // Shared Constants for consistency between Viewer and Cart
-const MATERIALS = ["PLA", "PETG", "ABS", "TPU", "Resin"];
-const COLORS = ["Black", "White", "Grey", "Red", "Blue", "Navy Blue", "Neon Green", "Silk Gold", "Transparent", "Orange"];
+const MATERIALS: string[] = []; // Intentionally empty: Will be filled by active partners
+const COLORS: string[] = []; // Intentionally empty: Will be filled by active partners
 
 // --- Integrated 3D Viewer / Configurator ---
 function ThreeDViewer({ file, onClear, onAddToCart }: { file: File, onClear: () => void, onAddToCart: (config: { price: string, material: string, color: string, weight: number }) => void }) {
-  const [weight, setWeight] = useState<number>(10);
-  const [material, setMaterial] = useState<string>('PLA');
-  const [color, setColor] = useState<string>('Black');
+  const [weight, setWeight] = useState<number>(0);
+  const [material, setMaterial] = useState<string>('');
+  const [color, setColor] = useState<string>('');
   const [showConfig, setShowConfig] = useState(false);
 
   const handleAdd = () => {
@@ -69,19 +69,15 @@ function ThreeDViewer({ file, onClear, onAddToCart }: { file: File, onClear: () 
                 <h3 className="text-white font-black uppercase text-sm tracking-widest border-b border-white/10 pb-2">Print Config</h3>
                 <div>
                   <label className="block text-[10px] font-black text-gray-500 uppercase mb-2">Material</label>
-                  <select value={material} onChange={(e) => setMaterial(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white text-xs outline-none">
-                    {MATERIALS.map(m => <option key={m} value={m} className="bg-gray-900">{m}</option>)}
+                  <select disabled value={material} onChange={(e) => setMaterial(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white text-xs outline-none opacity-50 cursor-not-allowed">
+                    {MATERIALS.length > 0 ? MATERIALS.map(m => <option key={m} value={m} className="bg-gray-900">{m}</option>) : <option>Awaiting Partners...</option>}
                   </select>
                 </div>
                 <div>
                   <label className="block text-[10px] font-black text-gray-500 uppercase mb-2">Color</label>
-                  <select value={color} onChange={(e) => setColor(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white text-xs outline-none">
-                    {COLORS.map(c => <option key={c} value={c} className="bg-gray-900">{c}</option>)}
+                  <select disabled value={color} onChange={(e) => setColor(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white text-xs outline-none opacity-50 cursor-not-allowed">
+                    {COLORS.length > 0 ? COLORS.map(c => <option key={c} value={c} className="bg-gray-900">{c}</option>) : <option>Awaiting Partners...</option>}
                   </select>
-                </div>
-                <div>
-                  <label className="block text-[10px] font-black text-gray-500 uppercase mb-2">Estimated Weight (g)</label>
-                  <input type="number" value={weight} onChange={(e) => setWeight(Number(e.target.value))} className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white text-xs outline-none" />
                 </div>
               </div>
               <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
@@ -273,7 +269,7 @@ export default function App() {
                 <p className="text-sm text-gray-500 mb-6 leading-relaxed">Configure materials and scale for pricing.</p>
                 <button className="mt-auto w-full bg-gray-900 text-white py-2.5 rounded-xl text-sm font-black hover:bg-gray-800 transition-colors">Start Quote</button>
               </div>
-              <div className="flex flex-col bg-white p-6 rounded-3xl shadow-sm border border-gray-200 hover:border-emerald-500 group cursor-pointer hover:-translate-y-1 transition-all" onClick={() => navigateTo('cart')}>
+              <div className="flex flex-col bg-white p-6 rounded-3xl shadow-sm border border-gray-200 hover:border-emerald-500 group cursor-pointer hover:-translate-y-1 transition-all" onClick={() => navigateTo('store')}>
                 <h3 className="font-black text-xl text-gray-900 mb-2">Parts Store</h3>
                 <p className="text-sm text-gray-500 mb-6 leading-relaxed">Browse ready-to-print utility parts.</p>
                 <button className="mt-auto w-full bg-white border-2 border-gray-100 text-gray-700 py-2 rounded-xl text-sm font-black hover:bg-gray-50 transition-all">Browse Shop</button>
@@ -282,6 +278,19 @@ export default function App() {
             <div className="bg-gray-900 rounded-[2rem] p-8 text-white flex flex-col md:flex-row items-center justify-between gap-8 shadow-2xl relative overflow-hidden text-center md:text-left">
               <div><h3 className="font-black text-2xl mb-3">Own a printer? Join the network.</h3><p className="text-gray-400 text-sm max-w-lg leading-relaxed">Add your machine to our manufacturing pool. Receive verified jobs and earn money.</p></div>
               <button onClick={() => navigateTo('partner')} className="whitespace-nowrap bg-emerald-600 text-white px-8 py-4 rounded-2xl font-black text-sm hover:bg-emerald-50 transition-all">Register Printer</button>
+            </div>
+          </div>
+        )}
+
+        {currentView === 'store' && (
+          <div className="max-w-4xl mx-auto w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <header className="flex items-center justify-between"><button onClick={() => setCurrentView('home')} className="text-xs font-black text-gray-400 hover:text-emerald-600 transition-colors">&larr; BACK</button><h2 className="text-4xl font-black italic tracking-tighter uppercase">Parts Store</h2></header>
+            <div className="bg-white rounded-[3rem] p-20 text-center border border-gray-100 shadow-sm flex flex-col items-center">
+              <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-6 border border-gray-100">
+                <svg className="w-10 h-10 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
+              </div>
+              <h3 className="text-2xl font-black text-gray-900 mb-2 uppercase tracking-tight">Store is Empty</h3>
+              <p className="text-gray-400 font-bold max-w-md mx-auto leading-relaxed">Popular and highly purchased prints will automatically appear here as the network grows.</p>
             </div>
           </div>
         )}
@@ -350,21 +359,23 @@ export default function App() {
                         <div>
                           <label className="block text-[10px] font-black text-gray-400 uppercase mb-1">Material</label>
                           <select 
+                            disabled
                             value={item.material} 
                             onChange={(e) => updateCartItem(item.id, { material: e.target.value })}
-                            className="w-full bg-gray-50 border border-gray-100 rounded-lg p-2 text-[10px] font-bold outline-none"
+                            className="w-full bg-gray-50 border border-gray-100 rounded-lg p-2 text-[10px] font-bold outline-none opacity-50 cursor-not-allowed"
                           >
-                            {MATERIALS.map(m => <option key={m} value={m}>{m}</option>)}
+                            {MATERIALS.length > 0 ? MATERIALS.map(m => <option key={m} value={m}>{m}</option>) : <option>Awaiting Partners</option>}
                           </select>
                         </div>
                         <div>
                           <label className="block text-[10px] font-black text-gray-400 uppercase mb-1">Color</label>
                           <select 
+                            disabled
                             value={item.color} 
                             onChange={(e) => updateCartItem(item.id, { color: e.target.value })}
-                            className="w-full bg-gray-50 border border-gray-100 rounded-lg p-2 text-[10px] font-bold outline-none"
+                            className="w-full bg-gray-50 border border-gray-100 rounded-lg p-2 text-[10px] font-bold outline-none opacity-50 cursor-not-allowed"
                           >
-                            {COLORS.map(c => <option key={c} value={c}>{c}</option>)}
+                            {COLORS.length > 0 ? COLORS.map(c => <option key={c} value={c}>{c}</option>) : <option>Awaiting Partners</option>}
                           </select>
                         </div>
                       </div>
