@@ -323,8 +323,8 @@ export default function App() {
           )}
 
           {currentView === 'home' && (
-            <div className="space-y-6 md:space-y-8 animate-in fade-in duration-500 pb-12">
-              <div className="bg-white/[0.03] backdrop-blur-2xl rounded-[3rem] p-10 md:p-16 border border-white/10 shadow-2xl relative overflow-hidden group">
+            <div className="min-h-full flex flex-col gap-6 md:gap-8 animate-in fade-in duration-500 pb-8">
+              <div className="flex-shrink-0 bg-white/[0.03] backdrop-blur-2xl rounded-[3rem] p-10 md:p-12 border border-white/10 shadow-2xl relative overflow-hidden group">
                 <div className="absolute top-0 right-0 -mt-20 -mr-20 w-80 h-80 bg-emerald-500/10 rounded-full blur-[80px] group-hover:bg-emerald-500/20 transition-colors duration-700 pointer-events-none"></div>
                 <div className="relative z-10 text-center md:text-left flex flex-col md:flex-row items-center justify-between gap-10">
                   <div className="max-w-xl">
@@ -335,8 +335,8 @@ export default function App() {
                 </div>
               </div>
 
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="bg-white/[0.03] backdrop-blur-2xl p-8 md:p-10 rounded-[2.5rem] shadow-lg border border-white/10 hover:border-emerald-500/30 hover:bg-white/5 active:scale-[0.98] transition-all cursor-pointer group flex flex-col justify-between" onClick={() => navigateTo('search')}>
+              <div className="flex-1 grid md:grid-cols-2 gap-6 min-h-[250px]">
+                <div className="h-full bg-white/[0.03] backdrop-blur-2xl p-8 md:p-10 rounded-[2.5rem] shadow-lg border border-white/10 hover:border-emerald-500/30 hover:bg-white/5 active:scale-[0.98] transition-all cursor-pointer group flex flex-col justify-between" onClick={() => navigateTo('search')}>
                   <div>
                     <div className="w-14 h-14 bg-white/5 rounded-[1.5rem] flex items-center justify-center text-emerald-400 mb-8 border border-white/10 group-hover:scale-110 transition-transform shadow-inner"><Search size={26} /></div>
                     <h3 className="font-black text-2xl text-white mb-3 tracking-tight">Find Files</h3>
@@ -344,7 +344,7 @@ export default function App() {
                   </div>
                 </div>
                 
-                <div className="bg-white/[0.03] backdrop-blur-2xl p-8 md:p-10 rounded-[2.5rem] shadow-lg border border-white/10 hover:border-blue-500/30 hover:bg-white/5 active:scale-[0.98] transition-all cursor-pointer group flex flex-col justify-between" onClick={() => navigateTo('store')}>
+                <div className="h-full bg-white/[0.03] backdrop-blur-2xl p-8 md:p-10 rounded-[2.5rem] shadow-lg border border-white/10 hover:border-blue-500/30 hover:bg-white/5 active:scale-[0.98] transition-all cursor-pointer group flex flex-col justify-between" onClick={() => navigateTo('store')}>
                   <div>
                     <div className="w-14 h-14 bg-white/5 rounded-[1.5rem] flex items-center justify-center text-blue-400 mb-8 border border-white/10 group-hover:scale-110 transition-transform shadow-inner"><Store size={26} /></div>
                     <h3 className="font-black text-2xl text-white mb-3 tracking-tight">Parts Store</h3>
@@ -353,7 +353,7 @@ export default function App() {
                 </div>
               </div>
 
-              <div className="bg-white/[0.03] backdrop-blur-2xl p-8 md:p-10 rounded-[2.5rem] shadow-xl border border-white/10 text-center sm:text-left flex flex-col sm:flex-row items-center justify-between gap-8">
+              <div className="flex-shrink-0 mt-auto bg-white/[0.03] backdrop-blur-2xl p-8 md:p-10 rounded-[2.5rem] shadow-xl border border-white/10 text-center sm:text-left flex flex-col sm:flex-row items-center justify-between gap-8">
                 <div>
                   <h3 className="font-black text-xl text-white mb-2 tracking-tight">Own a 3D printer?</h3>
                   <p className="text-sm text-gray-400 font-medium">Add your machine to the pool and earn money fulfilling jobs.</p>
