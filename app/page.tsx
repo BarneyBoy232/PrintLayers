@@ -283,8 +283,8 @@ export default function App() {
 
       {/* Scrollable Content Area */}
       <main className="flex-1 overflow-y-auto w-full custom-scrollbar relative z-10">
-        {/* pb-40 ensures the dock NEVER covers the bottom content when scrolled completely down */}
-        <div className="max-w-[1600px] mx-auto px-4 sm:px-8 lg:px-12 w-full min-h-full flex flex-col pt-6 pb-40">
+        {/* pb-64 ensures the dock NEVER covers the bottom content and leaves a large visual gap */}
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-8 lg:px-12 w-full min-h-full flex flex-col pt-6 pb-64">
           
           {currentView === 'signin' && (
             <div className="flex-1 flex items-center justify-center animate-in slide-in-from-bottom-8 duration-500">
@@ -300,6 +300,7 @@ export default function App() {
                     <input type="email" placeholder="Email Address" required className={`w-full px-5 py-4 rounded-2xl ${t.glassPanel} border ${t.glassInnerBorder} outline-none focus:border-orange-500 ${t.heading} placeholder-${isDarkMode ? 'gray-600' : 'gray-400'} text-sm font-medium transition-all shadow-inner`} value={email} onChange={e => setEmail(e.target.value)} />
                     <input type="password" placeholder="Password" required className={`w-full px-5 py-4 rounded-2xl ${t.glassPanel} border ${t.glassInnerBorder} outline-none focus:border-orange-500 ${t.heading} placeholder-${isDarkMode ? 'gray-600' : 'gray-400'} text-sm font-medium transition-all shadow-inner`} value={password} onChange={e => setPassword(e.target.value)} />
                     {isSignUpMode && <input type="password" placeholder="Confirm Password" required className={`w-full px-5 py-4 rounded-2xl ${t.glassPanel} border ${t.glassInnerBorder} outline-none focus:border-orange-500 ${t.heading} placeholder-${isDarkMode ? 'gray-600' : 'gray-400'} text-sm font-medium transition-all shadow-inner`} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} />}
+                    <input type="password" placeholder="Confirm Password" required className={`w-full px-5 py-4 rounded-2xl ${t.glassPanel} border ${t.glassInnerBorder} outline-none focus:border-orange-500 ${t.heading} placeholder-${isDarkMode ? 'gray-600' : 'gray-400'} text-sm font-medium transition-all shadow-inner`} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} />
                     <button type="submit" disabled={authSubmitting} className="w-full bg-orange-500 text-gray-950 py-4.5 rounded-2xl font-black shadow-[0_0_20px_rgba(249,115,22,0.2)] hover:shadow-[0_0_30px_rgba(249,115,22,0.4)] hover:bg-orange-400 transition-all uppercase tracking-widest text-xs disabled:opacity-50 active:scale-95 mt-2">{authSubmitting ? '...' : (isSignUpMode ? 'Sign Up' : 'Sign In')}</button>
                   </form>
                   <button onClick={handleOAuthSignIn} disabled={authSubmitting} className={`mt-4 w-full flex items-center justify-center gap-3 ${t.itemBg} border ${t.glassInnerBorder} py-4 rounded-2xl font-bold ${t.heading} ${t.itemHover} transition-all active:scale-95 text-sm`}>Continue with Google</button>
@@ -310,8 +311,8 @@ export default function App() {
           )}
 
           {currentView === 'home' && (
-            <div className="flex-1 flex flex-col gap-4 md:gap-6 animate-in fade-in duration-500">
-              <div className={`flex-shrink-0 w-full ${t.glassBg} backdrop-blur-2xl rounded-[3rem] p-10 md:p-12 border ${t.glassBorder} shadow-2xl relative overflow-hidden group`}>
+            <div className="w-full flex flex-col gap-4 md:gap-6 animate-in fade-in duration-500">
+              <div className={`w-full ${t.glassBg} backdrop-blur-2xl rounded-[3rem] p-10 md:p-12 border ${t.glassBorder} shadow-2xl relative overflow-hidden group`}>
                 <div className="absolute top-0 right-0 -mt-20 -mr-20 w-80 h-80 bg-orange-500/10 rounded-full blur-[80px] group-hover:bg-orange-500/20 transition-colors duration-700 pointer-events-none"></div>
                 <div className="relative z-10 text-center md:text-left flex flex-col md:flex-row items-center justify-between gap-10">
                   <div className="max-w-2xl">
@@ -322,9 +323,8 @@ export default function App() {
                 </div>
               </div>
 
-              {/* flex-1 ensures this grid stretches on 27" monitors and compresses on 15" without awkward scrolling */}
-              <div className="flex-1 grid md:grid-cols-2 gap-4 md:gap-6 min-h-[200px]">
-                <div className={`w-full h-full ${t.glassBg} backdrop-blur-2xl p-8 md:p-10 rounded-[2.5rem] shadow-lg border ${t.glassBorder} hover:border-orange-500/30 ${t.itemHover} active:scale-[0.98] transition-all cursor-pointer group flex flex-col justify-between`} onClick={() => navigateTo('search')}>
+              <div className="w-full grid md:grid-cols-2 gap-4 md:gap-6">
+                <div className={`w-full ${t.glassBg} backdrop-blur-2xl p-8 md:p-10 rounded-[2.5rem] shadow-lg border ${t.glassBorder} hover:border-orange-500/30 ${t.itemHover} active:scale-[0.98] transition-all cursor-pointer group flex flex-col justify-between`} onClick={() => navigateTo('search')}>
                   <div>
                     <div className={`w-14 h-14 ${t.itemBg} rounded-[1.5rem] flex items-center justify-center text-orange-500 mb-8 border ${t.glassInnerBorder} group-hover:scale-110 transition-transform shadow-inner`}><Search size={26} /></div>
                     <h3 className={`font-black text-2xl ${t.heading} mb-3 tracking-tight`}>Find Files</h3>
@@ -332,7 +332,7 @@ export default function App() {
                   </div>
                 </div>
                 
-                <div className={`w-full h-full ${t.glassBg} backdrop-blur-2xl p-8 md:p-10 rounded-[2.5rem] shadow-lg border ${t.glassBorder} hover:border-blue-500/30 ${t.itemHover} active:scale-[0.98] transition-all cursor-pointer group flex flex-col justify-between`} onClick={() => navigateTo('store')}>
+                <div className={`w-full ${t.glassBg} backdrop-blur-2xl p-8 md:p-10 rounded-[2.5rem] shadow-lg border ${t.glassBorder} hover:border-blue-500/30 ${t.itemHover} active:scale-[0.98] transition-all cursor-pointer group flex flex-col justify-between`} onClick={() => navigateTo('store')}>
                   <div>
                     <div className={`w-14 h-14 ${t.itemBg} rounded-[1.5rem] flex items-center justify-center text-blue-500 mb-8 border ${t.glassInnerBorder} group-hover:scale-110 transition-transform shadow-inner`}><Store size={26} /></div>
                     <h3 className={`font-black text-2xl ${t.heading} mb-3 tracking-tight`}>Parts Store</h3>
@@ -341,7 +341,7 @@ export default function App() {
                 </div>
               </div>
 
-              <div className={`flex-shrink-0 w-full ${t.glassBg} backdrop-blur-2xl p-8 md:p-10 rounded-[2.5rem] shadow-xl border ${t.glassBorder} text-center sm:text-left flex flex-col sm:flex-row items-center justify-between gap-8`}>
+              <div className={`w-full ${t.glassBg} backdrop-blur-2xl p-8 md:p-10 rounded-[2.5rem] shadow-xl border ${t.glassBorder} text-center sm:text-left flex flex-col sm:flex-row items-center justify-between gap-8`}>
                 <div>
                   <h3 className={`font-black text-xl ${t.heading} mb-2 tracking-tight`}>Own a 3D printer?</h3>
                   <p className={`text-sm ${t.muted} font-medium`}>Add your machine to the pool and earn money fulfilling jobs.</p>
