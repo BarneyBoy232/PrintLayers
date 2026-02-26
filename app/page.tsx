@@ -27,7 +27,6 @@ type View = 'home' | 'search' | 'adjust' | 'store' | 'partner' | 'signin' | 'car
 
 const PARTNER_FILAMENTS: Record<string, string[]> = {}; 
 
-// Dynamic Theme Helper to maintain the "cut from a single sheet" glass aesthetic
 const useTheme = (isDark: boolean) => ({
   bg: isDark ? 'bg-[#0a0a0a]' : 'bg-[#f8fafc]',
   text: isDark ? 'text-gray-100' : 'text-gray-800',
@@ -45,7 +44,6 @@ const useTheme = (isDark: boolean) => ({
   headerGradient: isDark ? 'from-orange-400 to-amber-400' : 'from-orange-500 to-amber-500',
 });
 
-// --- Integrated 3D Viewer / Configurator ---
 function ThreeDViewer({ file, onClear, onAddToCart, t, isDarkMode }: { file: File, onClear: () => void, onAddToCart: (config: any) => void, t: any, isDarkMode: boolean }) {
   const [weight, setWeight] = useState<number>(0);
   const [material, setMaterial] = useState<string>('');
@@ -57,7 +55,7 @@ function ThreeDViewer({ file, onClear, onAddToCart, t, isDarkMode }: { file: Fil
   };
 
   return (
-    <div className="w-full h-full space-y-6 animate-in zoom-in-95 duration-500 flex flex-col">
+    <div className="w-full h-full animate-in zoom-in-95 duration-500 flex flex-col">
       <div className={`w-full flex-1 min-h-[500px] ${t.glassBg} backdrop-blur-2xl rounded-[3rem] overflow-hidden relative border ${t.glassBorder} shadow-2xl flex flex-col`}>
         {!showConfig ? (
           <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-12">
@@ -66,7 +64,7 @@ function ThreeDViewer({ file, onClear, onAddToCart, t, isDarkMode }: { file: Fil
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5" />
               </svg>
             </div>
-            <h2 className={`${t.heading} text-3xl font-black italic tracking-tighter uppercase mb-3`}>{file.name}</h2>
+            <h2 className={`${t.heading} text-3xl font-black tracking-tighter uppercase mb-3`}>{file.name}</h2>
             <p className={`${t.muted} max-w-md mx-auto leading-relaxed text-sm`}>File successfully loaded into the viewer. Ready for parameter configuration.</p>
             <div className="mt-10 flex flex-col sm:flex-row gap-4 w-full max-w-md">
               <button onClick={() => setShowConfig(true)} className="flex-1 bg-orange-500 hover:bg-orange-400 text-gray-950 py-4 rounded-2xl font-black transition-all shadow-[0_0_20px_rgba(249,115,22,0.3)] hover:shadow-[0_0_30px_rgba(249,115,22,0.5)]">Configure Print</button>
@@ -75,11 +73,11 @@ function ThreeDViewer({ file, onClear, onAddToCart, t, isDarkMode }: { file: Fil
           </div>
         ) : (
           <div className={`absolute inset-0 p-6 md:p-8 flex flex-col md:flex-row gap-6 md:gap-8 ${t.glassPanel} backdrop-blur-xl`}>
-            <div className={`flex-1 rounded-[2rem] bg-gradient-to-br from-orange-500/10 to-transparent border ${t.glassInnerBorder} flex items-center justify-center text-orange-500/50 font-black italic text-2xl tracking-widest shadow-inner`}>
+            <div className={`flex-1 rounded-[2rem] bg-gradient-to-br from-orange-500/10 to-transparent border ${t.glassInnerBorder} flex items-center justify-center text-orange-500/50 font-black text-2xl tracking-widest shadow-inner`}>
               3D PREVIEW ENGINE
             </div>
-            <div className="w-full md:w-96 space-y-6 overflow-y-auto pr-2 custom-scrollbar">
-              <div className="space-y-4">
+            <div className="w-full md:w-96 flex flex-col space-y-6 overflow-y-auto pr-2 custom-scrollbar">
+              <div className="space-y-4 flex-1">
                 <h3 className={`${t.heading} font-black uppercase text-xs tracking-[0.2em] border-b ${t.glassInnerBorder} pb-3 flex items-center gap-2`}>
                   <Settings size={14} className="text-orange-500" /> Print Config
                 </h3>
@@ -87,18 +85,11 @@ function ThreeDViewer({ file, onClear, onAddToCart, t, isDarkMode }: { file: Fil
                 <div className={`space-y-4 p-5 ${t.itemBg} rounded-[1.5rem] border ${t.glassInnerBorder}`}>
                   <div>
                     <label className={`block text-[10px] font-black ${t.muted} uppercase mb-2`}>Search Material</label>
-                    <input 
-                      type="text" 
-                      disabled 
-                      placeholder="Awaiting Partners..." 
-                      className={`w-full ${t.inputBg} border ${t.glassBorder} rounded-xl p-3.5 ${t.heading} text-xs outline-none opacity-50 cursor-not-allowed focus:border-orange-500 transition-colors`}
-                    />
+                    <input type="text" disabled placeholder="Awaiting Partners..." className={`w-full ${t.inputBg} border ${t.glassBorder} rounded-xl p-3.5 ${t.heading} text-xs outline-none opacity-50 cursor-not-allowed focus:border-orange-500 transition-colors`} />
                   </div>
                   <div>
                     <label className={`block text-[10px] font-black ${t.muted} uppercase mb-2`}>Available Colors</label>
-                    <div className={`w-full ${isDarkMode ? 'bg-black/30' : 'bg-black/5'} border ${t.glassInnerBorder} rounded-xl p-3.5 ${t.muted} text-xs italic opacity-50 cursor-not-allowed`}>
-                      Requires Material Selection
-                    </div>
+                    <div className={`w-full ${isDarkMode ? 'bg-black/30' : 'bg-black/5'} border ${t.glassInnerBorder} rounded-xl p-3.5 ${t.muted} text-xs italic opacity-50 cursor-not-allowed`}>Requires Material Selection</div>
                   </div>
                 </div>
 
@@ -107,12 +98,13 @@ function ThreeDViewer({ file, onClear, onAddToCart, t, isDarkMode }: { file: Fil
                   <input type="number" value={weight} onChange={(e) => setWeight(Number(e.target.value))} className={`w-full ${t.itemBg} border ${t.glassBorder} rounded-[1.5rem] p-4 ${t.heading} font-bold outline-none focus:border-orange-500 transition-colors shadow-inner`} />
                 </div>
               </div>
-              <div className={`p-5 bg-orange-500/10 border border-orange-500/20 rounded-[1.5rem] relative overflow-hidden`}>
+              
+              <div className={`p-5 bg-orange-500/10 border border-orange-500/20 rounded-[1.5rem] relative overflow-hidden flex-shrink-0`}>
                 <div className="absolute top-0 right-0 w-20 h-20 bg-orange-500/20 blur-2xl"></div>
                 <p className="text-[10px] font-black text-orange-500 uppercase mb-1 relative z-10">Quote Status</p>
-                <p className={`${t.heading} text-2xl font-black italic relative z-10`}>PENDING</p>
+                <p className={`${t.heading} text-2xl font-black relative z-10`}>PENDING</p>
               </div>
-              <div className={`space-y-3 pt-4 border-t ${t.glassInnerBorder}`}>
+              <div className={`space-y-3 pt-4 border-t ${t.glassInnerBorder} flex-shrink-0`}>
                 <button onClick={handleAdd} className="w-full bg-orange-500 text-gray-950 py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-orange-400 transition-all shadow-[0_0_20px_rgba(249,115,22,0.2)] active:scale-95">Add to Cart</button>
                 <button onClick={() => setShowConfig(false)} className={`w-full ${t.itemBg} ${t.itemHover} ${t.muted} hover:${t.heading} py-4 rounded-2xl font-bold text-[10px] uppercase tracking-widest transition-all active:scale-95`}>Back to Viewer</button>
               </div>
@@ -124,7 +116,6 @@ function ThreeDViewer({ file, onClear, onAddToCart, t, isDarkMode }: { file: Fil
   );
 }
 
-// --- Main Application ---
 export default function App() {
   const [supabase, setSupabase] = useState<any>(null);
   const [user, setUser] = useState<SupabaseUser | null>(null);
@@ -171,9 +162,7 @@ export default function App() {
     return () => { if (authListenerRef.current) authListenerRef.current.unsubscribe(); };
   }, []);
 
-  const updateCartItem = (id: string, updates: Partial<CartItem>) => {
-    setCart(cart.map(item => item.id === id ? { ...item, ...updates } : item));
-  };
+  const updateCartItem = (id: string, updates: Partial<CartItem>) => setCart(cart.map(item => item.id === id ? { ...item, ...updates } : item));
 
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -269,7 +258,7 @@ export default function App() {
                 <ArrowLeft size={20} />
               </button>
             )}
-            <h1 className={`text-2xl font-black italic tracking-tighter uppercase ${currentView === 'home' ? `text-transparent bg-clip-text bg-gradient-to-r ${t.headerGradient}` : t.heading}`}>
+            <h1 className={`text-2xl font-black tracking-tighter uppercase ${currentView === 'home' ? `text-transparent bg-clip-text bg-gradient-to-r ${t.headerGradient}` : t.heading}`}>
               {getHeaderTitle()}
             </h1>
           </div>
@@ -293,11 +282,12 @@ export default function App() {
       </header>
 
       {/* Scrollable Content Area */}
-      <main className="flex-1 overflow-y-auto w-full pb-32 custom-scrollbar relative z-10">
-        <div className="max-w-[1600px] mx-auto px-4 sm:px-8 lg:px-12 w-full h-full pt-8">
+      <main className="flex-1 overflow-y-auto w-full custom-scrollbar relative z-10">
+        {/* pb-40 ensures the dock NEVER covers the bottom content when scrolled completely down */}
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-8 lg:px-12 w-full min-h-full flex flex-col pt-6 pb-40">
           
           {currentView === 'signin' && (
-            <div className="h-full flex items-center justify-center animate-in slide-in-from-bottom-8 duration-500">
+            <div className="flex-1 flex items-center justify-center animate-in slide-in-from-bottom-8 duration-500">
               <div className={`w-full max-w-md ${t.glassBg} backdrop-blur-2xl p-10 rounded-[3rem] shadow-2xl border ${t.glassBorder} text-center relative overflow-hidden`}>
                 <div className="relative z-10">
                   <div className={`w-16 h-16 ${t.itemBg} rounded-[1.5rem] flex items-center justify-center mx-auto mb-6 text-orange-500 border ${t.glassInnerBorder} shadow-inner`}>
@@ -320,8 +310,8 @@ export default function App() {
           )}
 
           {currentView === 'home' && (
-            <div className="w-full space-y-6 md:space-y-8 animate-in fade-in duration-500 pb-12">
-              <div className={`w-full ${t.glassBg} backdrop-blur-2xl rounded-[3rem] p-10 md:p-12 border ${t.glassBorder} shadow-2xl relative overflow-hidden group`}>
+            <div className="flex-1 flex flex-col gap-4 md:gap-6 animate-in fade-in duration-500">
+              <div className={`flex-shrink-0 w-full ${t.glassBg} backdrop-blur-2xl rounded-[3rem] p-10 md:p-12 border ${t.glassBorder} shadow-2xl relative overflow-hidden group`}>
                 <div className="absolute top-0 right-0 -mt-20 -mr-20 w-80 h-80 bg-orange-500/10 rounded-full blur-[80px] group-hover:bg-orange-500/20 transition-colors duration-700 pointer-events-none"></div>
                 <div className="relative z-10 text-center md:text-left flex flex-col md:flex-row items-center justify-between gap-10">
                   <div className="max-w-2xl">
@@ -332,8 +322,9 @@ export default function App() {
                 </div>
               </div>
 
-              <div className="w-full grid md:grid-cols-2 gap-6 md:gap-8">
-                <div className={`w-full ${t.glassBg} backdrop-blur-2xl p-8 md:p-10 rounded-[2.5rem] shadow-lg border ${t.glassBorder} hover:border-orange-500/30 ${t.itemHover} active:scale-[0.98] transition-all cursor-pointer group flex flex-col justify-between`} onClick={() => navigateTo('search')}>
+              {/* flex-1 ensures this grid stretches on 27" monitors and compresses on 15" without awkward scrolling */}
+              <div className="flex-1 grid md:grid-cols-2 gap-4 md:gap-6 min-h-[200px]">
+                <div className={`w-full h-full ${t.glassBg} backdrop-blur-2xl p-8 md:p-10 rounded-[2.5rem] shadow-lg border ${t.glassBorder} hover:border-orange-500/30 ${t.itemHover} active:scale-[0.98] transition-all cursor-pointer group flex flex-col justify-between`} onClick={() => navigateTo('search')}>
                   <div>
                     <div className={`w-14 h-14 ${t.itemBg} rounded-[1.5rem] flex items-center justify-center text-orange-500 mb-8 border ${t.glassInnerBorder} group-hover:scale-110 transition-transform shadow-inner`}><Search size={26} /></div>
                     <h3 className={`font-black text-2xl ${t.heading} mb-3 tracking-tight`}>Find Files</h3>
@@ -341,7 +332,7 @@ export default function App() {
                   </div>
                 </div>
                 
-                <div className={`w-full ${t.glassBg} backdrop-blur-2xl p-8 md:p-10 rounded-[2.5rem] shadow-lg border ${t.glassBorder} hover:border-blue-500/30 ${t.itemHover} active:scale-[0.98] transition-all cursor-pointer group flex flex-col justify-between`} onClick={() => navigateTo('store')}>
+                <div className={`w-full h-full ${t.glassBg} backdrop-blur-2xl p-8 md:p-10 rounded-[2.5rem] shadow-lg border ${t.glassBorder} hover:border-blue-500/30 ${t.itemHover} active:scale-[0.98] transition-all cursor-pointer group flex flex-col justify-between`} onClick={() => navigateTo('store')}>
                   <div>
                     <div className={`w-14 h-14 ${t.itemBg} rounded-[1.5rem] flex items-center justify-center text-blue-500 mb-8 border ${t.glassInnerBorder} group-hover:scale-110 transition-transform shadow-inner`}><Store size={26} /></div>
                     <h3 className={`font-black text-2xl ${t.heading} mb-3 tracking-tight`}>Parts Store</h3>
@@ -350,7 +341,7 @@ export default function App() {
                 </div>
               </div>
 
-              <div className={`w-full ${t.glassBg} backdrop-blur-2xl p-8 md:p-10 rounded-[2.5rem] shadow-xl border ${t.glassBorder} text-center sm:text-left flex flex-col sm:flex-row items-center justify-between gap-8`}>
+              <div className={`flex-shrink-0 w-full ${t.glassBg} backdrop-blur-2xl p-8 md:p-10 rounded-[2.5rem] shadow-xl border ${t.glassBorder} text-center sm:text-left flex flex-col sm:flex-row items-center justify-between gap-8`}>
                 <div>
                   <h3 className={`font-black text-xl ${t.heading} mb-2 tracking-tight`}>Own a 3D printer?</h3>
                   <p className={`text-sm ${t.muted} font-medium`}>Add your machine to the pool and earn money fulfilling jobs.</p>
@@ -361,8 +352,8 @@ export default function App() {
           )}
 
           {currentView === 'store' && (
-            <div className="h-full flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <div className={`flex-1 ${t.glassBg} backdrop-blur-2xl rounded-[3rem] p-12 text-center border ${t.glassBorder} shadow-2xl flex flex-col items-center justify-center min-h-[60vh] relative overflow-hidden`}>
+            <div className="flex-1 flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className={`flex-1 ${t.glassBg} backdrop-blur-2xl rounded-[3rem] p-12 text-center border ${t.glassBorder} shadow-2xl flex flex-col items-center justify-center relative overflow-hidden`}>
                 <div className={`w-28 h-28 ${t.itemBg} rounded-[2rem] flex items-center justify-center mb-8 border ${t.glassInnerBorder} ${t.muted} shadow-inner relative z-10`}>
                   <Store size={48} strokeWidth={1.5} />
                 </div>
@@ -373,9 +364,9 @@ export default function App() {
           )}
 
           {currentView === 'search' && (
-            <div className="space-y-6 md:space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <div className={`${t.glassBg} backdrop-blur-2xl p-8 md:p-14 rounded-[3rem] border ${t.glassBorder} shadow-2xl space-y-10 text-center relative overflow-hidden`}>
-                <div className="max-w-xl mx-auto space-y-8 relative z-10">
+            <div className="flex-1 flex flex-col gap-6 md:gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className={`flex-1 flex flex-col justify-center ${t.glassBg} backdrop-blur-2xl p-8 md:p-14 rounded-[3rem] border ${t.glassBorder} shadow-2xl space-y-10 text-center relative overflow-hidden`}>
+                <div className="max-w-2xl w-full mx-auto space-y-8 relative z-10">
                   <h3 className={`font-black text-2xl ${t.heading} uppercase tracking-tight flex items-center justify-center gap-3`}>
                     <Search className="text-orange-500" /> Search Repositories
                   </h3>
@@ -392,13 +383,13 @@ export default function App() {
                 </div>
               </div>
 
-              <div className={`${t.glassBg} backdrop-blur-2xl p-8 md:p-14 rounded-[3rem] shadow-2xl border ${t.glassBorder} text-center relative overflow-hidden`}>
-                <div className="max-w-xl mx-auto space-y-8 relative z-10">
+              <div className={`flex-shrink-0 ${t.glassBg} backdrop-blur-2xl p-8 md:p-14 rounded-[3rem] shadow-2xl border ${t.glassBorder} text-center relative overflow-hidden`}>
+                <div className="max-w-2xl w-full mx-auto space-y-8 relative z-10">
                   <h3 className={`font-black text-2xl uppercase tracking-tight text-orange-500`}>Import via URL</h3>
                   <p className={`${t.muted} text-base font-medium`}>Found exactly what you need? Paste the link directly.</p>
-                  <form onSubmit={handleImport} className="space-y-4">
-                    <input type="url" required placeholder="https://..." className={`w-full px-8 py-6 rounded-2xl ${t.itemBg} border ${t.glassInnerBorder} outline-none font-bold text-base text-center placeholder-${isDarkMode ? 'gray-600' : 'gray-400'} ${t.heading} focus:border-orange-500 transition-all shadow-inner`} value={importUrl} onChange={e => setImportUrl(e.target.value)} />
-                    <button type="submit" className="w-full bg-orange-500 text-gray-950 py-6 rounded-2xl font-black uppercase tracking-widest text-sm shadow-[0_0_20px_rgba(249,115,22,0.2)] hover:shadow-[0_0_30px_rgba(249,115,22,0.4)] hover:bg-orange-400 active:scale-95 transition-all">Add to Cart</button>
+                  <form onSubmit={handleImport} className="flex flex-col sm:flex-row gap-4">
+                    <input type="url" required placeholder="https://..." className={`flex-1 px-8 py-5 rounded-2xl ${t.itemBg} border ${t.glassInnerBorder} outline-none font-bold text-base placeholder-${isDarkMode ? 'gray-600' : 'gray-400'} ${t.heading} focus:border-orange-500 transition-all shadow-inner`} value={importUrl} onChange={e => setImportUrl(e.target.value)} />
+                    <button type="submit" className="sm:w-auto w-full px-10 bg-orange-500 text-gray-950 py-5 rounded-2xl font-black uppercase tracking-widest text-sm shadow-[0_0_20px_rgba(249,115,22,0.2)] hover:shadow-[0_0_30px_rgba(249,115,22,0.4)] hover:bg-orange-400 active:scale-95 transition-all">Add to Cart</button>
                   </form>
                 </div>
               </div>
@@ -406,26 +397,26 @@ export default function App() {
           )}
 
           {currentView === 'adjust' && (
-            <div className="h-full min-h-[60vh] animate-in fade-in slide-in-from-bottom-4 duration-500 flex flex-col">
+            <div className="flex-1 flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-500">
               {!uploadedFile ? (
                 <div onClick={() => fileInputRef.current?.click()} className={`flex-1 group w-full border-[3px] border-dashed ${isDarkMode ? 'border-white/10' : 'border-black/10'} rounded-[3rem] ${t.itemBg} backdrop-blur-2xl flex flex-col items-center justify-center p-12 text-center cursor-pointer hover:border-orange-500/50 ${t.itemHover} transition-all duration-500`}>
                   <input type="file" ref={fileInputRef} className="hidden" accept=".stl,.3mf,.step,.stp" onChange={handleFileUpload} />
                   <div className={`w-28 h-28 ${t.glassBg} rounded-[2rem] flex items-center justify-center mb-8 border ${t.glassInnerBorder} group-hover:scale-110 group-hover:bg-orange-500/20 group-hover:border-orange-500/30 transition-all duration-500 shadow-inner`}>
                     <Plus size={48} className={`${t.muted} group-hover:text-orange-500 transition-colors`} />
                   </div>
-                  <h3 className={`text-3xl font-black ${t.heading} mb-3 uppercase tracking-tighter italic group-hover:text-orange-500 transition-colors`}>Drop 3D File Here</h3>
+                  <h3 className={`text-3xl font-black ${t.heading} mb-3 uppercase tracking-tighter group-hover:text-orange-500 transition-colors`}>Drop 3D File Here</h3>
                   <p className={`${t.muted} font-medium text-sm tracking-wide`}>Supports .STL, .3MF, .STEP</p>
                 </div>
               ) : ( 
-                <div className="flex-1"><ThreeDViewer file={uploadedFile} onClear={() => setUploadedFile(null)} onAddToCart={handleAddToCartFromConfig} t={t} isDarkMode={isDarkMode} /></div>
+                <div className="flex-1 flex flex-col"><ThreeDViewer file={uploadedFile} onClear={() => setUploadedFile(null)} onAddToCart={handleAddToCartFromConfig} t={t} isDarkMode={isDarkMode} /></div>
               )}
             </div>
           )}
 
           {currentView === 'cart' && (
-            <div className="space-y-6 md:space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="flex-1 flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-500">
               {cart.length === 0 ? (
-                <div className={`${t.glassBg} backdrop-blur-2xl rounded-[3rem] p-20 text-center border ${t.glassBorder} shadow-2xl flex flex-col items-center`}>
+                <div className={`flex-1 ${t.glassBg} backdrop-blur-2xl rounded-[3rem] p-20 text-center border ${t.glassBorder} shadow-2xl flex flex-col items-center justify-center`}>
                   <div className={`w-24 h-24 ${t.itemBg} rounded-[2rem] flex items-center justify-center mb-8 ${t.muted} border ${t.glassInnerBorder} shadow-inner`}>
                     <ShoppingCart size={40} />
                   </div>
@@ -433,7 +424,7 @@ export default function App() {
                   <button onClick={() => navigateTo('search')} className="bg-orange-500 text-gray-950 px-10 py-5 rounded-2xl font-black text-xs uppercase tracking-widest active:scale-95 hover:bg-orange-400 shadow-[0_0_20px_rgba(249,115,22,0.2)] transition-all">Start Discovering</button>
                 </div>
               ) : (
-                <div className="flex flex-col xl:flex-row gap-6 md:gap-8 items-start">
+                <div className="flex-1 flex flex-col xl:flex-row gap-6 md:gap-8 items-start">
                   <div className="w-full xl:flex-1 space-y-4 md:space-y-6">
                     {cart.map(item => (
                       <div key={item.id} className={`${t.glassBg} backdrop-blur-2xl p-6 md:p-8 rounded-[2.5rem] border ${t.glassBorder} flex flex-col gap-6 shadow-xl hover:border-orange-500/30 transition-all group`}>
@@ -451,30 +442,23 @@ export default function App() {
                         <div className={`grid grid-cols-1 sm:grid-cols-2 gap-4 p-5 ${t.glassPanel} rounded-[1.5rem] border ${t.glassInnerBorder} shadow-inner`}>
                           <div>
                             <label className={`block text-[10px] font-black ${t.muted} uppercase mb-2 ml-1`}>Search Material</label>
-                            <input 
-                              type="text" 
-                              disabled
-                              placeholder="Awaiting Partners..."
-                              className={`w-full ${t.itemBg} border ${t.glassInnerBorder} rounded-xl p-4 text-xs font-bold ${t.heading} outline-none opacity-50 cursor-not-allowed focus:border-orange-500 transition-colors`}
-                            />
+                            <input type="text" disabled placeholder="Awaiting Partners..." className={`w-full ${t.itemBg} border ${t.glassInnerBorder} rounded-xl p-4 text-xs font-bold ${t.heading} outline-none opacity-50 cursor-not-allowed focus:border-orange-500 transition-colors`} />
                           </div>
                           <div>
                             <label className={`block text-[10px] font-black ${t.muted} uppercase mb-2 ml-1`}>Available Colors</label>
-                            <div className={`w-full ${t.itemBg} border ${t.glassInnerBorder} rounded-xl p-4 text-xs ${t.muted} italic opacity-50 cursor-not-allowed flex items-center`}>
-                              Requires Material Selection
-                            </div>
+                            <div className={`w-full ${t.itemBg} border ${t.glassInnerBorder} rounded-xl p-4 text-xs ${t.muted} italic opacity-50 cursor-not-allowed flex items-center`}>Requires Material Selection</div>
                           </div>
                         </div>
                       </div>
                     ))}
                   </div>
 
-                  <div className={`w-full xl:w-96 ${t.glassBg} backdrop-blur-2xl rounded-[3rem] p-8 md:p-10 ${t.heading} space-y-8 shadow-2xl border ${t.glassBorder} xl:sticky xl:top-28 flex-shrink-0 relative overflow-hidden`}>
+                  <div className={`w-full xl:w-[400px] ${t.glassBg} backdrop-blur-2xl rounded-[3rem] p-8 md:p-10 ${t.heading} space-y-8 shadow-2xl border ${t.glassBorder} xl:sticky xl:top-28 flex-shrink-0 relative overflow-hidden`}>
                     <h3 className={`font-black uppercase text-xs tracking-[0.2em] border-b ${t.glassInnerBorder} pb-4 relative z-10`}>Quote Summary</h3>
                     <div className="space-y-6 relative z-10">
                       <div className={`flex justify-between items-center ${t.itemBg} p-6 rounded-[1.5rem] border ${t.glassInnerBorder}`}>
                         <span className={`font-black uppercase text-sm tracking-widest ${t.muted}`}>Total</span>
-                        <span className="text-2xl font-black text-orange-500 italic tracking-tighter">PENDING</span>
+                        <span className="text-2xl font-black text-orange-500 tracking-tighter">PENDING</span>
                       </div>
                       <p className={`text-xs ${t.muted} font-medium leading-relaxed ${t.glassPanel} p-5 rounded-[1.5rem] border ${t.glassInnerBorder} shadow-inner`}>Price is calculated dynamically after a partner reviews your specific material and scale requirements.</p>
                     </div>
@@ -490,7 +474,7 @@ export default function App() {
 
       {/* Floating App Dock (Bottom Navigation) */}
       <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 w-[95%] max-w-[420px]">
-        <nav className={`${t.dockBg} backdrop-blur-2xl border ${t.glassBorder} p-3 rounded-[2.5rem] shadow-[0_20px_40px_rgba(0,0,0,0.5)] flex items-center justify-between px-5 relative transition-colors duration-500`}>
+        <nav className={`${t.dockBg} backdrop-blur-2xl border ${t.glassBorder} p-3 rounded-[2.5rem] shadow-[0_20px_40px_rgba(0,0,0,0.2)] flex items-center justify-between px-5 relative transition-colors duration-500`}>
           
           <button 
             onClick={() => navigateTo('home')} 
@@ -506,7 +490,6 @@ export default function App() {
             <Search size={24} strokeWidth={currentView === 'search' ? 2.5 : 2} />
           </button>
 
-          {/* Floating Action Button for main action (Upload/Adjust) */}
           <div className="relative -top-10 px-2">
             <button 
               onClick={() => navigateTo('adjust')} 
