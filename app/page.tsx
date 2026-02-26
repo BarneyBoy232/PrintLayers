@@ -23,7 +23,7 @@ interface CartItem {
   weight: number;
 }
 
-type View = 'home' | 'search' | 'adjust' | 'store' | 'partner' | 'signin' | 'cart' | 'admin';
+type View = 'home' | 'search' | 'adjust' | 'store' | 'partner' | 'signin' | 'cart' | 'admin' | 'profile';
 
 const PARTNER_FILAMENTS: Record<string, string[]> = {}; 
 
@@ -193,7 +193,11 @@ export default function App() {
 
   const navigateTo = (view: View) => {
     if (view === 'admin' && user?.email !== ADMIN_EMAIL) { setAuthError("Access Denied: Admins Only."); return; }
-    if (!user && view !== 'home' && view !== 'search' && view !== 'store') { setCurrentView('signin'); return; }
+    // Enforce authentication for protected routes
+    if (!user && !['home', 'search', 'store', 'signin'].includes(view)) { 
+      setCurrentView('signin'); 
+      return; 
+    }
     setCurrentView(view);
   };
 
@@ -234,6 +238,7 @@ export default function App() {
       case 'partner': return 'Partner Network';
       case 'signin': return 'Authentication';
       case 'admin': return 'Admin Panel';
+      case 'profile': return 'Profile';
       default: return 'PrintLayers';
     }
   };
@@ -272,10 +277,16 @@ export default function App() {
                 <Settings size={20} />
               </button>
             )}
-            {user && (
+            {user ? (
               <button onClick={() => supabase.auth.signOut()} className={`text-[10px] font-black uppercase tracking-widest ${t.muted} hover:text-red-500 transition-colors px-2`}>
                 Sign Out
               </button>
+            ) : (
+              currentView !== 'signin' && (
+                <button onClick={() => navigateTo('signin')} className={`text-[10px] font-black uppercase tracking-widest text-orange-500 hover:text-orange-400 transition-colors px-2`}>
+                  Sign In
+                </button>
+              )
             )}
           </div>
         </div>
@@ -300,11 +311,33 @@ export default function App() {
                     <input type="email" placeholder="Email Address" required className={`w-full px-5 py-4 rounded-2xl ${t.glassPanel} border ${t.glassInnerBorder} outline-none focus:border-orange-500 ${t.heading} placeholder-${isDarkMode ? 'gray-600' : 'gray-400'} text-sm font-medium transition-all shadow-inner`} value={email} onChange={e => setEmail(e.target.value)} />
                     <input type="password" placeholder="Password" required className={`w-full px-5 py-4 rounded-2xl ${t.glassPanel} border ${t.glassInnerBorder} outline-none focus:border-orange-500 ${t.heading} placeholder-${isDarkMode ? 'gray-600' : 'gray-400'} text-sm font-medium transition-all shadow-inner`} value={password} onChange={e => setPassword(e.target.value)} />
                     {isSignUpMode && <input type="password" placeholder="Confirm Password" required className={`w-full px-5 py-4 rounded-2xl ${t.glassPanel} border ${t.glassInnerBorder} outline-none focus:border-orange-500 ${t.heading} placeholder-${isDarkMode ? 'gray-600' : 'gray-400'} text-sm font-medium transition-all shadow-inner`} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} />}
-                    <input type="password" placeholder="Confirm Password" required className={`w-full px-5 py-4 rounded-2xl ${t.glassPanel} border ${t.glassInnerBorder} outline-none focus:border-orange-500 ${t.heading} placeholder-${isDarkMode ? 'gray-600' : 'gray-400'} text-sm font-medium transition-all shadow-inner`} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} />
                     <button type="submit" disabled={authSubmitting} className="w-full bg-orange-500 text-gray-950 py-4.5 rounded-2xl font-black shadow-[0_0_20px_rgba(249,115,22,0.2)] hover:shadow-[0_0_30px_rgba(249,115,22,0.4)] hover:bg-orange-400 transition-all uppercase tracking-widest text-xs disabled:opacity-50 active:scale-95 mt-2">{authSubmitting ? '...' : (isSignUpMode ? 'Sign Up' : 'Sign In')}</button>
                   </form>
                   <button onClick={handleOAuthSignIn} disabled={authSubmitting} className={`mt-4 w-full flex items-center justify-center gap-3 ${t.itemBg} border ${t.glassInnerBorder} py-4 rounded-2xl font-bold ${t.heading} ${t.itemHover} transition-all active:scale-95 text-sm`}>Continue with Google</button>
                   <div className={`mt-8 pt-6 border-t ${t.glassInnerBorder}`}><button onClick={() => setIsSignUpMode(!isSignUpMode)} className="text-xs font-black text-orange-500 uppercase tracking-wider transition-colors hover:text-orange-400">{isSignUpMode ? 'Back to Sign In' : "Join Network"}</button></div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {currentView === 'profile' && user && (
+            <div className="flex-1 flex flex-col items-center justify-center animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className={`w-full max-w-2xl ${t.glassBg} backdrop-blur-2xl p-10 md:p-12 rounded-[3rem] shadow-2xl border ${t.glassBorder} text-center relative overflow-hidden`}>
+                <div className="absolute top-0 right-0 -mt-20 -mr-20 w-80 h-80 bg-orange-500/10 rounded-full blur-[80px] pointer-events-none"></div>
+                <div className="relative z-10">
+                  <div className={`w-20 h-20 ${t.itemBg} rounded-[2rem] flex items-center justify-center mx-auto mb-6 text-orange-500 border ${t.glassInnerBorder} shadow-inner`}>
+                    <User size={40} />
+                  </div>
+                  <h2 className={`text-3xl font-black ${t.heading} mb-2`}>Your Account</h2>
+                  <p className={`${t.muted} mb-10`}>{user.email}</p>
+                  
+                  <div className="space-y-6 text-left">
+                    <div className={`p-6 md:p-8 ${t.glassPanel} rounded-[2rem] border ${t.glassInnerBorder} shadow-inner`}>
+                      <h4 className={`font-black ${t.heading} text-lg mb-2`}>Network Status</h4>
+                      <p className={`text-sm ${t.muted} mb-6`}>You are currently using PrintLayers as a customer. Become a partner to receive jobs and earn.</p>
+                      <button onClick={() => navigateTo('partner')} className="w-full sm:w-auto bg-orange-500 text-gray-950 px-8 py-4 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-orange-400 shadow-[0_0_20px_rgba(249,115,22,0.2)] transition-all">Register a Printer</button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -510,10 +543,10 @@ export default function App() {
           </button>
 
           <button 
-            onClick={() => navigateTo('signin')} 
-            className={`p-3.5 rounded-2xl transition-all duration-300 flex flex-col items-center gap-1 ${['signin', 'partner', 'admin'].includes(currentView) ? activeBtnClass : inactiveBtnClass}`}
+            onClick={() => navigateTo('profile')} 
+            className={`p-3.5 rounded-2xl transition-all duration-300 flex flex-col items-center gap-1 ${['profile', 'partner', 'admin'].includes(currentView) ? activeBtnClass : inactiveBtnClass}`}
           >
-            <User size={24} strokeWidth={['signin', 'partner', 'admin'].includes(currentView) ? 2.5 : 2} />
+            <User size={24} strokeWidth={['profile', 'partner', 'admin'].includes(currentView) ? 2.5 : 2} />
           </button>
 
         </nav>
