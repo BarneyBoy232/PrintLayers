@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, useRef } from 'react';
-import { Home, Search, Plus, ShoppingCart, User, Settings, Store, ArrowLeft, Sun, Moon, Layers } from 'lucide-react';
+import { Home, Search, Plus, ShoppingCart, User, Settings, Store, ArrowLeft, Sun, Moon, Layers, Zap } from 'lucide-react';
 
 const ADMIN_EMAIL = 'ethan.barnacoat@gmail.com';
 const SUPABASE_URL = 'https://xijtyfewiimfcwoodxlq.supabase.co';
@@ -427,30 +427,61 @@ export default function App() {
 
           {currentView === 'catalogue' && (
             <div className="flex-1 flex flex-col gap-6 md:gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              
+              {/* Quick Recommendation Banner */}
+              <div className={`w-full ${t.glassBg} backdrop-blur-2xl p-6 md:p-8 rounded-[2rem] border border-orange-500/40 shadow-[0_0_30px_rgba(249,115,22,0.15)] flex flex-col sm:flex-row items-center gap-6 relative overflow-hidden`}>
+                <div className="absolute -right-10 -top-10 w-40 h-40 bg-orange-500/20 rounded-full blur-3xl pointer-events-none"></div>
+                <div className="flex-shrink-0 w-16 h-16 bg-orange-500/20 rounded-[1.5rem] flex items-center justify-center text-orange-500 border border-orange-500/30">
+                  <Zap size={32} />
+                </div>
+                <div className="relative z-10">
+                  <h4 className={`font-black text-xl ${t.heading} mb-2`}>Quick Recommendation</h4>
+                  <p className={`${t.muted} text-sm leading-relaxed max-w-3xl`}>
+                    For 90% of everyday prints, <span className="text-orange-500 font-black">PLA</span> is your best choice (excellent detail & lowest price). 
+                    For functional parts left outdoors or in hot cars, use <span className="text-orange-500 font-black">ASA</span> (UV & high-heat resistant). 
+                    For most users, these are the only two filaments you'll ever need.
+                  </p>
+                </div>
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {FILAMENT_DATA.filaments.map((f) => (
-                  <div key={f.id} className={`${t.glassBg} backdrop-blur-xl p-8 rounded-[2.5rem] border ${t.glassBorder} shadow-lg hover:shadow-xl transition-shadow flex flex-col`}>
-                    <div className="flex justify-between items-start mb-2">
-                      <h4 className={`font-black text-2xl ${t.heading} tracking-tight`}>{f.name}</h4>
-                      <span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest ${f.type === 'Certified' ? 'bg-orange-500/20 text-orange-500 border border-orange-500/30' : t.itemBg + ' ' + t.muted + ' border ' + t.glassInnerBorder}`}>
-                        {f.type}
-                      </span>
-                    </div>
-                    <p className={`text-xs ${t.muted} font-bold italic mb-6`}>{f.trait}</p>
-                    
-                    <div className={`space-y-3 mt-auto p-5 rounded-[1.5rem] ${t.glassPanel} border ${t.glassInnerBorder} shadow-inner`}>
-                      {Object.entries(f.stats).map(([key, val]) => (
-                        <div key={key} className="flex items-center justify-between gap-3 text-[10px]">
-                          <span className={`${t.muted} w-20 uppercase font-bold tracking-wider truncate`}>{key.replace('_', ' ')}</span>
-                          <div className={`flex-1 h-1.5 ${isDarkMode ? 'bg-white/10' : 'bg-black/10'} rounded-full overflow-hidden`}>
-                            <div className={`h-full bg-orange-500 rounded-full`} style={{ width: `${(val as number) * 10}%` }}></div>
-                          </div>
-                          <span className={`${t.heading} font-black w-4 text-right`}>{val as number}</span>
+                {FILAMENT_DATA.filaments.map((f) => {
+                  const isTopPick = f.id === 'pla' || f.id === 'asa';
+                  const highlightStat = f.id === 'pla' ? 'price' : (f.id === 'asa' ? 'weather' : null);
+
+                  return (
+                    <div key={f.id} className={`${t.glassBg} backdrop-blur-xl p-8 rounded-[2.5rem] border ${isTopPick ? 'border-orange-500/50 shadow-[0_0_20px_rgba(249,115,22,0.1)]' : t.glassBorder} hover:shadow-xl transition-shadow flex flex-col relative overflow-hidden`}>
+                      {isTopPick && (
+                        <div className="absolute top-0 right-0 bg-orange-500 text-gray-950 text-[9px] font-black uppercase px-4 py-1.5 rounded-bl-2xl z-10 shadow-md">
+                          Top Pick
                         </div>
-                      ))}
+                      )}
+                      
+                      <div className="flex justify-between items-start mb-2 relative z-10">
+                        <h4 className={`font-black text-2xl ${t.heading} tracking-tight`}>{f.name}</h4>
+                        <span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest ${f.type === 'Certified' ? 'bg-orange-500/20 text-orange-500 border border-orange-500/30' : t.itemBg + ' ' + t.muted + ' border ' + t.glassInnerBorder}`}>
+                          {f.type}
+                        </span>
+                      </div>
+                      <p className={`text-xs ${isTopPick ? 'text-orange-400' : t.muted} font-bold italic mb-6 relative z-10`}>{f.trait}</p>
+                      
+                      <div className={`space-y-3 mt-auto p-5 rounded-[1.5rem] ${t.glassPanel} border ${t.glassInnerBorder} shadow-inner relative z-10`}>
+                        {Object.entries(f.stats).map(([key, val]) => {
+                          const isHighlighted = highlightStat === key;
+                          return (
+                            <div key={key} className="flex items-center justify-between gap-3 text-[10px]">
+                              <span className={`${isHighlighted ? 'text-orange-500 font-black' : t.muted + ' font-bold'} w-20 uppercase tracking-wider truncate`}>{key.replace('_', ' ')}</span>
+                              <div className={`flex-1 h-1.5 ${isDarkMode ? 'bg-white/10' : 'bg-black/10'} rounded-full overflow-hidden`}>
+                                <div className={`h-full ${isHighlighted ? 'bg-gradient-to-r from-orange-400 to-rose-500 shadow-[0_0_10px_rgba(249,115,22,0.8)]' : 'bg-orange-500/50'} rounded-full`} style={{ width: `${(val as number) * 10}%` }}></div>
+                              </div>
+                              <span className={`${isHighlighted ? 'text-orange-500' : t.heading} font-black w-4 text-right`}>{val as number}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
               <div className={`w-full ${t.glassBg} backdrop-blur-2xl p-8 md:p-10 rounded-[3rem] border ${t.glassBorder} shadow-xl`}>
