@@ -6,6 +6,7 @@ import { Home, Search, Plus, ShoppingCart, User, Settings, Store, ArrowLeft, Sun
 const INITIAL_ADMINS = ['ethan.barnacoat@gmail.com'];
 const SUPABASE_URL = 'https://xijtyfewiimfcwoodxlq.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhpanR5ZmV3aWltZmN3b29keGxxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY0NzA4ODQsImV4cCI6MjA4MjA0Njg4NH0.tc4usglFmTnLKJSEfw_KAdHCiltpykUtaBo9bhppdjw';
+const GOOGLE_MAPS_API_KEY = 'AIzaSyAphDjU-emPqD24ozf1RDG0u8L3DS-aXps';
 
 interface SupabaseUser {
   id: string;
@@ -114,6 +115,37 @@ const useTheme = (isDark: boolean) => ({
   headerGradient: isDark ? 'from-orange-400 to-amber-400' : 'from-orange-500 to-amber-500',
 });
 
+function AddressAutocomplete({ t, placeholder, isLoaded, onChange }: { t: any, placeholder: string, isLoaded: boolean, onChange?: (address: string) => void }) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const autocompleteRef = useRef<any>(null);
+
+  useEffect(() => {
+    if (!isLoaded || !inputRef.current || !(window as any).google) return;
+    
+    autocompleteRef.current = new (window as any).google.maps.places.Autocomplete(inputRef.current, {
+      fields: ['formatted_address'],
+      types: ['address']
+    });
+
+    autocompleteRef.current.addListener('place_changed', () => {
+      const place = autocompleteRef.current.getPlace();
+      if (onChange && place.formatted_address) {
+        onChange(place.formatted_address);
+      }
+    });
+  }, [isLoaded, onChange]);
+
+  return (
+    <input 
+      ref={inputRef} 
+      type="text" 
+      placeholder={placeholder} 
+      className={`w-full ${t.glassPanel} border ${t.glassInnerBorder} rounded-xl p-4 text-sm font-bold ${t.heading} outline-none focus:border-emerald-500`} 
+      onChange={(e) => onChange?.(e.target.value)}
+    />
+  );
+}
+
 function ThreeDViewer({ file, onClear, onAddToCart, t, isDarkMode }: { file: File, onClear: () => void, onAddToCart: (config: any) => void, t: any, isDarkMode: boolean }) {
   const [weight, setWeight] = useState<number>(0);
   const [material, setMaterial] = useState<string>('');
@@ -200,6 +232,7 @@ export default function App() {
   const [admins, setAdmins] = useState<string[]>(INITIAL_ADMINS);
   const [newAdminEmail, setNewAdminEmail] = useState('');
   const [adminTab, setAdminTab] = useState<'overview' | 'orders' | 'partners' | 'disputes' | 'settings'>('overview');
+  const [isGoogleLoaded, setIsGoogleLoaded] = useState(false);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -216,6 +249,8 @@ export default function App() {
   useEffect(() => {
     if (isInitialized.current) return;
     isInitialized.current = true;
+    
+    // Load Supabase
     const script = document.createElement('script');
     script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
     script.async = true;
@@ -232,6 +267,15 @@ export default function App() {
       authListenerRef.current = subscription;
     };
     document.head.appendChild(script);
+
+    // Load Google Maps API for Places Autocomplete
+    const googleScript = document.createElement('script');
+    googleScript.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places`;
+    googleScript.async = true;
+    googleScript.defer = true;
+    googleScript.onload = () => setIsGoogleLoaded(true);
+    document.head.appendChild(googleScript);
+
     return () => { if (authListenerRef.current) authListenerRef.current.unsubscribe(); };
   }, []);
 
@@ -479,7 +523,11 @@ export default function App() {
                       <h3 className={`font-black text-xl ${t.heading}`}>Logistics</h3>
                     </div>
                     <div className="space-y-4">
-                      <input type="text" placeholder="Zip / Postal Code" className={`w-full ${t.glassPanel} border ${t.glassInnerBorder} rounded-xl p-4 text-sm font-bold ${t.heading} outline-none focus:border-emerald-500`} />
+                      <AddressAutocomplete 
+                        t={t} 
+                        placeholder="Full Address (Start typing...)" 
+                        isLoaded={isGoogleLoaded}
+                      />
                       <select className={`w-full ${t.glassPanel} border ${t.glassInnerBorder} rounded-xl p-4 text-sm font-bold ${t.heading} outline-none focus:border-emerald-500`}>
                         <option>Fast Turnaround (24-48 hrs)</option>
                         <option>Standard Turnaround (3-5 days)</option>
