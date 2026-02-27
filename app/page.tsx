@@ -69,35 +69,6 @@ const BEST_STATS = {
   price: Math.min(...FILAMENT_DATA.filaments.map(f => f.stats.price)),
 };
 
-// --- Future Partner Certification Logic (Currently Dormant) ---
-// These thresholds dictate when a partner upgrades from printing "Basic" to "Certified" filaments.
-const CERTIFICATION_REQUIREMENTS = {
-  minTotalPrints: 50,      // Minimum successful prints fulfilled
-  minTotalHours: 150,      // Minimum total print hours logged
-  minAverageRating: 4.7    // Minimum required customer rating (out of 5)
-};
-
-// Types for future partner stats integration
-interface PartnerStats {
-  totalPrints: number;
-  totalHours: number;
-  averageRating: number;
-  isManuallyCertified?: boolean; // Admin override
-}
-
-// Helper to evaluate if a partner has unlocked "Certified" filaments. Not yet bound to UI.
-export const checkPartnerCertification = (stats?: PartnerStats): boolean => {
-  if (!stats) return false;
-  if (stats.isManuallyCertified) return true;
-  
-  return (
-    stats.totalPrints >= CERTIFICATION_REQUIREMENTS.minTotalPrints &&
-    stats.totalHours >= CERTIFICATION_REQUIREMENTS.minTotalHours &&
-    stats.averageRating >= CERTIFICATION_REQUIREMENTS.minAverageRating
-  );
-};
-// --------------------------------------------------------------
-
 const useTheme = (isDark: boolean) => ({
   bg: isDark ? 'bg-[#0a0a0a]' : 'bg-[#f8fafc]',
   text: isDark ? 'text-gray-100' : 'text-gray-800',
@@ -588,7 +559,6 @@ export default function App() {
                         <label key={f.id} className={`flex items-center gap-4 p-4 rounded-xl ${t.glassPanel} border ${t.glassInnerBorder} cursor-pointer hover:border-orange-500/50 transition-all`}>
                           <input type="checkbox" className="w-5 h-5 rounded border-gray-300 text-orange-500 focus:ring-orange-500 bg-black/20" />
                           <span className={`font-bold ${t.heading} flex-1`}>{f.name}</span>
-                          {f.type === 'Certified' && <span className="text-[9px] font-black uppercase text-orange-500 bg-orange-500/10 px-2 py-1 rounded-md">Locked</span>}
                         </label>
                       ))}
                     </div>
@@ -654,7 +624,7 @@ export default function App() {
                   
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
                     <div>
-                      <h2 className={`text-4xl font-black ${t.heading} tracking-tight uppercase mb-2`}>God View</h2>
+                      <h2 className={`text-4xl font-black ${t.heading} tracking-tight uppercase mb-2`}>Admin Dashboard</h2>
                       <p className={`${t.muted}`}>Platform control center and network health.</p>
                     </div>
                     {/* Admin Navigation Pills */}
@@ -684,81 +654,40 @@ export default function App() {
                       <div className="grid md:grid-cols-3 gap-6 animate-in fade-in">
                         <div className={`p-8 ${t.glassPanel} rounded-[2rem] border ${t.glassInnerBorder} shadow-inner flex flex-col items-center justify-center text-center`}>
                           <p className={`text-xs font-black uppercase tracking-widest ${t.muted} mb-2`}>Total Volume (30d)</p>
-                          <p className={`text-4xl font-black text-emerald-500`}>$14,209</p>
+                          <p className={`text-4xl font-black text-emerald-500`}>$0.00</p>
                         </div>
                         <div className={`p-8 ${t.glassPanel} rounded-[2rem] border ${t.glassInnerBorder} shadow-inner flex flex-col items-center justify-center text-center`}>
                           <p className={`text-xs font-black uppercase tracking-widest ${t.muted} mb-2`}>Platform Fees</p>
-                          <p className={`text-4xl font-black text-purple-500`}>$2,131</p>
+                          <p className={`text-4xl font-black text-purple-500`}>$0.00</p>
                         </div>
                         <div className={`p-8 ${t.glassPanel} rounded-[2rem] border ${t.glassInnerBorder} shadow-inner flex flex-col items-center justify-center text-center`}>
                           <p className={`text-xs font-black uppercase tracking-widest ${t.muted} mb-2`}>Pending Payouts</p>
-                          <p className={`text-4xl font-black text-orange-500`}>$840</p>
+                          <p className={`text-4xl font-black text-orange-500`}>$0.00</p>
                         </div>
                         <div className={`md:col-span-3 p-8 ${t.itemBg} rounded-[2rem] border ${t.glassInnerBorder} h-64 flex items-center justify-center text-center`}>
-                          <p className={`${t.muted} font-bold italic`}>Chart Visualization Placeholder</p>
+                          <p className={`${t.muted} font-bold italic`}>No metrics to display yet.</p>
                         </div>
                       </div>
                     )}
 
                     {adminTab === 'orders' && (
-                      <div className={`w-full overflow-x-auto ${t.glassPanel} rounded-[2rem] border ${t.glassInnerBorder} shadow-inner p-6 animate-in fade-in`}>
-                        <table className="w-full text-left border-collapse min-w-[600px]">
-                          <thead>
-                            <tr className={`border-b ${t.glassInnerBorder} text-xs uppercase tracking-widest ${t.muted}`}>
-                              <th className="p-4 font-black">Order ID</th>
-                              <th className="p-4 font-black">Status</th>
-                              <th className="p-4 font-black">Partner</th>
-                              <th className="p-4 font-black">Value</th>
-                              <th className="p-4 font-black text-right">Actions</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {['#ORD-8821', '#ORD-8822', '#ORD-8823'].map((ord, i) => (
-                              <tr key={ord} className={`border-b ${t.glassInnerBorder} last:border-0 hover:${t.itemBg} transition-colors`}>
-                                <td className={`p-4 font-bold ${t.heading}`}>{ord}</td>
-                                <td className="p-4"><span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase ${i===0 ? 'bg-orange-500/20 text-orange-500' : 'bg-emerald-500/20 text-emerald-500'}`}>{i===0 ? 'Printing' : 'Shipped'}</span></td>
-                                <td className={`p-4 font-medium ${t.muted}`}>partner_{i+1}@sys.com</td>
-                                <td className={`p-4 font-bold ${t.heading}`}>${(40 + i*15).toFixed(2)}</td>
-                                <td className="p-4 text-right">
-                                  <button className={`text-[10px] font-black text-purple-500 hover:text-purple-400 uppercase tracking-widest`}>Manage</button>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
+                      <div className={`w-full overflow-x-auto ${t.glassPanel} rounded-[2rem] border ${t.glassInnerBorder} shadow-inner p-6 animate-in fade-in flex flex-col items-center justify-center min-h-[300px]`}>
+                        <ListOrdered size={48} className={`${t.muted} mb-4 opacity-50`} />
+                        <h3 className={`text-xl font-black ${t.heading}`}>No Active Orders</h3>
+                        <p className={`${t.muted} text-sm mt-2`}>Orders placed on the network will appear here.</p>
                       </div>
                     )}
 
                     {adminTab === 'partners' && (
-                      <div className="space-y-4 animate-in fade-in">
-                        {[
-                          { email: 'top_printer@gmail.com', prints: 142, hours: 450, rating: 4.9, isCert: true },
-                          { email: 'new_guy99@yahoo.com', prints: 12, hours: 25, rating: 4.5, isCert: false }
-                        ].map((p, i) => (
-                          <div key={i} className={`flex flex-col sm:flex-row items-start sm:items-center justify-between p-6 rounded-[2rem] ${t.glassPanel} border ${t.glassInnerBorder} shadow-inner gap-4`}>
-                            <div>
-                              <p className={`font-black ${t.heading} text-lg mb-1`}>{p.email}</p>
-                              <div className="flex gap-4 text-xs font-bold text-gray-500">
-                                <span>{p.prints} Prints</span>
-                                <span>{p.hours} Hrs</span>
-                                <span className="text-yellow-500 flex items-center gap-1">★ {p.rating}</span>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-4 w-full sm:w-auto">
-                              <span className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border ${p.isCert ? 'bg-orange-500/10 border-orange-500/30 text-orange-500' : t.itemBg + ' ' + t.glassInnerBorder + ' ' + t.muted}`}>
-                                {p.isCert ? 'Certified' : 'Basic'}
-                              </span>
-                              <button className={`flex-1 sm:flex-none bg-purple-600/20 text-purple-500 border border-purple-500/30 px-6 py-3 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-purple-600 hover:text-white transition-all`}>
-                                Toggle Cert
-                              </button>
-                            </div>
-                          </div>
-                        ))}
+                      <div className={`w-full ${t.glassPanel} rounded-[2rem] border ${t.glassInnerBorder} shadow-inner p-6 animate-in fade-in flex flex-col items-center justify-center min-h-[300px]`}>
+                        <Users size={48} className={`${t.muted} mb-4 opacity-50`} />
+                        <h3 className={`text-xl font-black ${t.heading}`}>No Partners Registered</h3>
+                        <p className={`${t.muted} text-sm mt-2`}>Partner network is currently empty.</p>
                       </div>
                     )}
 
                     {adminTab === 'disputes' && (
-                      <div className={`p-12 ${t.glassPanel} rounded-[2rem] border ${t.glassInnerBorder} shadow-inner flex flex-col items-center justify-center text-center animate-in fade-in`}>
+                      <div className={`p-12 ${t.glassPanel} rounded-[2rem] border ${t.glassInnerBorder} shadow-inner flex flex-col items-center justify-center text-center animate-in fade-in min-h-[300px]`}>
                         <div className={`w-20 h-20 bg-emerald-500/10 rounded-[1.5rem] flex items-center justify-center mb-4 text-emerald-500 border border-emerald-500/20 shadow-inner`}>
                           <Zap size={32} />
                         </div>
