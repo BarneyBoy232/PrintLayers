@@ -476,7 +476,22 @@ export default function App() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {FILAMENT_DATA.filaments.map((f) => {
                   const isTopPick = f.id === 'pla' || f.id === 'asa';
-                  const highlightStat = f.id === 'pla' ? 'price' : (f.id === 'asa' ? 'weather' : null);
+                  const statHighlights: Record<string, string> = {
+                    'pla': 'price',
+                    'asa': 'weather',
+                    'tpu-80a': 'flex',
+                    'pc': 'strength',
+                    'pp': 'weather',
+                    'petg': 'strength',
+                    'pla-cf': 'strength',
+                    'nylon-gf': 'heat_resist',
+                    'petg-cf': 'strength',
+                    'abs': 'heat_resist',
+                    'pc-cf': 'strength',
+                    'tpu-99d': 'flex',
+                    'pp-gf': 'strength'
+                  };
+                  const highlightStat = statHighlights[f.id] || null;
                   const isAvailable = ['pla', 'asa', 'petg'].includes(f.id);
 
                   return (
