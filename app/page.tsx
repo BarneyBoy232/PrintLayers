@@ -115,7 +115,7 @@ const useTheme = (isDark: boolean) => ({
   headerGradient: isDark ? 'from-orange-400 to-amber-400' : 'from-orange-500 to-amber-500',
 });
 
-function AddressAutocomplete({ t, placeholder, isLoaded, onChange }: { t: any, placeholder: string, isLoaded: boolean, onChange?: (address: string) => void }) {
+function AddressAutocomplete({ t, placeholder, isLoaded, onPlaceSelected }: { t: any, placeholder: string, isLoaded: boolean, onPlaceSelected?: (address: string) => void }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const autocompleteRef = useRef<any>(null);
 
@@ -129,19 +129,18 @@ function AddressAutocomplete({ t, placeholder, isLoaded, onChange }: { t: any, p
 
     autocompleteRef.current.addListener('place_changed', () => {
       const place = autocompleteRef.current.getPlace();
-      if (onChange && place.formatted_address) {
-        onChange(place.formatted_address);
+      if (onPlaceSelected && place.formatted_address) {
+        onPlaceSelected(place.formatted_address);
       }
     });
-  }, [isLoaded, onChange]);
+  }, [isLoaded, onPlaceSelected]);
 
   return (
     <input 
       ref={inputRef} 
       type="text" 
       placeholder={placeholder} 
-      className={`w-full ${t.glassPanel} border ${t.glassInnerBorder} rounded-xl p-4 text-sm font-bold ${t.heading} outline-none focus:border-emerald-500`} 
-      onChange={(e) => onChange?.(e.target.value)}
+      className={`w-full ${t.glassPanel} border ${t.glassInnerBorder} rounded-xl p-4 text-sm font-bold ${t.heading} outline-none focus:border-emerald-500 transition-colors`} 
     />
   );
 }
@@ -391,11 +390,11 @@ export default function App() {
 
       {/* Address Prompt Modal */}
       {showAddressPrompt && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
-          <div className={`w-full max-w-md ${t.glassBg} backdrop-blur-2xl p-8 rounded-[3rem] shadow-2xl border ${t.glassBorder} relative overflow-hidden`}>
+        <div className={`fixed inset-0 z-[100] flex items-center justify-center p-4 ${isDarkMode ? 'bg-black/70' : 'bg-slate-900/20'} backdrop-blur-md animate-in fade-in duration-300`}>
+          <div className={`w-full max-w-md ${isDarkMode ? 'bg-gray-900' : 'bg-white'} p-8 rounded-[3rem] shadow-2xl border ${t.glassBorder} relative overflow-hidden`}>
             <div className="absolute top-0 right-0 -mt-10 -mr-10 w-40 h-40 bg-emerald-500/20 rounded-full blur-[50px] pointer-events-none"></div>
             <div className="relative z-10">
-              <div className={`w-16 h-16 ${t.itemBg} rounded-[1.5rem] flex items-center justify-center mb-6 text-emerald-500 border ${t.glassInnerBorder} shadow-inner`}>
+              <div className={`w-16 h-16 ${isDarkMode ? 'bg-emerald-500/10' : 'bg-emerald-50'} rounded-[1.5rem] flex items-center justify-center mb-6 text-emerald-500 border ${isDarkMode ? 'border-emerald-500/20' : 'border-emerald-200'} shadow-inner`}>
                 <MapPin size={32} />
               </div>
               <h3 className={`text-2xl font-black ${t.heading} mb-2 tracking-tight`}>Where to?</h3>
@@ -405,15 +404,15 @@ export default function App() {
                 t={t} 
                 placeholder="Start typing your address..." 
                 isLoaded={isGoogleLoaded}
-                onChange={(addr) => {
+                onPlaceSelected={(addr) => {
                   setUserAddress(addr);
-                  setTimeout(() => setShowAddressPrompt(false), 600); // Auto-close smoothly after picking
+                  setTimeout(() => setShowAddressPrompt(false), 600);
                 }}
               />
               
               <button 
                 onClick={() => setShowAddressPrompt(false)} 
-                className={`mt-6 w-full ${t.itemBg} ${t.itemHover} ${t.heading} py-4 rounded-2xl font-bold transition-all text-sm border ${t.glassInnerBorder}`}
+                className={`mt-6 w-full ${isDarkMode ? 'bg-white/5 hover:bg-white/10' : 'bg-gray-100 hover:bg-gray-200'} ${t.heading} py-4 rounded-2xl font-bold transition-all text-sm`}
               >
                 Skip for now
               </button>
@@ -506,7 +505,7 @@ export default function App() {
                         t={t} 
                         placeholder="Search for your delivery address..." 
                         isLoaded={isGoogleLoaded}
-                        onChange={setUserAddress}
+                        onPlaceSelected={setUserAddress}
                       />
                       {userAddress && (
                         <p className={`text-sm font-bold text-emerald-500 mt-4 p-4 bg-emerald-500/10 rounded-xl border border-emerald-500/20`}>
@@ -585,6 +584,7 @@ export default function App() {
                         t={t} 
                         placeholder="Full Address (Start typing...)" 
                         isLoaded={isGoogleLoaded}
+                        onPlaceSelected={setUserAddress}
                       />
                       <select className={`w-full ${t.glassPanel} border ${t.glassInnerBorder} rounded-xl p-4 text-sm font-bold ${t.heading} outline-none focus:border-emerald-500`}>
                         <option>Fast Turnaround (24-48 hrs)</option>
