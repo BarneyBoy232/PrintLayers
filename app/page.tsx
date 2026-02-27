@@ -115,7 +115,7 @@ const useTheme = (isDark: boolean) => ({
   headerGradient: isDark ? 'from-orange-400 to-amber-400' : 'from-orange-500 to-amber-500',
 });
 
-function AddressAutocomplete({ t, placeholder, isLoaded, onPlaceSelected }: { t: any, placeholder: string, isLoaded: boolean, onPlaceSelected?: (address: string) => void }) {
+function AddressAutocomplete({ t, placeholder, isLoaded, onPlaceSelected, onChangeText }: { t: any, placeholder: string, isLoaded: boolean, onPlaceSelected?: (address: string) => void, onChangeText?: (text: string) => void }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const autocompleteRef = useRef<any>(null);
   const callbackRef = useRef(onPlaceSelected);
@@ -138,15 +138,18 @@ function AddressAutocomplete({ t, placeholder, isLoaded, onPlaceSelected }: { t:
       const place = autocompleteRef.current.getPlace();
       if (callbackRef.current && place.formatted_address) {
         callbackRef.current(place.formatted_address);
+        if (inputRef.current) inputRef.current.value = place.formatted_address;
+        if (onChangeText) onChangeText(place.formatted_address);
       }
     });
-  }, [isLoaded]);
+  }, [isLoaded, onChangeText]);
 
   return (
     <input 
       ref={inputRef} 
       type="text" 
       placeholder={placeholder} 
+      onChange={(e) => onChangeText && onChangeText(e.target.value)}
       className={`w-full ${t.glassPanel} border ${t.glassInnerBorder} rounded-xl p-4 text-sm font-bold ${t.heading} outline-none focus:border-emerald-500 transition-colors`} 
     />
   );
@@ -240,6 +243,7 @@ export default function App() {
   const [adminTab, setAdminTab] = useState<'overview' | 'orders' | 'partners' | 'disputes' | 'settings'>('overview');
   const [isGoogleLoaded, setIsGoogleLoaded] = useState(false);
   const [userAddress, setUserAddress] = useState('');
+  const [tempAddress, setTempAddress] = useState('');
   const [showAddressPrompt, setShowAddressPrompt] = useState(false);
 
   const [email, setEmail] = useState('');
@@ -411,18 +415,27 @@ export default function App() {
                 t={t} 
                 placeholder="Start typing your address..." 
                 isLoaded={isGoogleLoaded}
-                onPlaceSelected={(addr) => {
-                  setUserAddress(addr);
-                  setTimeout(() => setShowAddressPrompt(false), 600);
-                }}
+                onPlaceSelected={setTempAddress}
+                onChangeText={setTempAddress}
               />
               
-              <button 
-                onClick={() => setShowAddressPrompt(false)} 
-                className={`mt-6 w-full ${isDarkMode ? 'bg-white/5 hover:bg-white/10' : 'bg-gray-100 hover:bg-gray-200'} ${t.heading} py-4 rounded-2xl font-bold transition-all text-sm`}
-              >
-                Skip for now
-              </button>
+              <div className="flex gap-3 mt-6">
+                <button 
+                  onClick={() => {
+                    if (tempAddress) setUserAddress(tempAddress);
+                    setShowAddressPrompt(false);
+                  }} 
+                  className={`flex-1 bg-emerald-500 hover:bg-emerald-400 text-white py-4 rounded-2xl font-black transition-all text-sm shadow-[0_0_20px_rgba(16,185,129,0.3)] active:scale-95`}
+                >
+                  Confirm
+                </button>
+                <button 
+                  onClick={() => setShowAddressPrompt(false)} 
+                  className={`flex-1 ${isDarkMode ? 'bg-white/5 hover:bg-white/10' : 'bg-gray-100 hover:bg-gray-200'} ${t.heading} py-4 rounded-2xl font-bold transition-all text-sm active:scale-95`}
+                >
+                  Skip
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -513,6 +526,7 @@ export default function App() {
                         placeholder="Search for your delivery address..." 
                         isLoaded={isGoogleLoaded}
                         onPlaceSelected={setUserAddress}
+                        onChangeText={setUserAddress}
                       />
                       {userAddress && (
                         <p className={`text-sm font-bold text-emerald-500 mt-4 p-4 bg-emerald-500/10 rounded-xl border border-emerald-500/20`}>
