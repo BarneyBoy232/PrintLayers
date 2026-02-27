@@ -233,6 +233,7 @@ export default function App() {
   const [newAdminEmail, setNewAdminEmail] = useState('');
   const [adminTab, setAdminTab] = useState<'overview' | 'orders' | 'partners' | 'disputes' | 'settings'>('overview');
   const [isGoogleLoaded, setIsGoogleLoaded] = useState(false);
+  const [userAddress, setUserAddress] = useState('');
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -457,6 +458,21 @@ export default function App() {
                   <p className={`${t.muted} mb-10`}>{user.email}</p>
                   
                   <div className="space-y-6 text-left">
+                    <div className={`p-6 md:p-8 ${t.glassPanel} rounded-[2rem] border ${t.glassInnerBorder} shadow-inner`}>
+                      <h4 className={`font-black ${t.heading} text-lg mb-4 flex items-center gap-2`}><MapPin size={18} className="text-emerald-500" /> Delivery Address</h4>
+                      <AddressAutocomplete 
+                        t={t} 
+                        placeholder="Search for your delivery address..." 
+                        isLoaded={isGoogleLoaded}
+                        onChange={setUserAddress}
+                      />
+                      {userAddress && (
+                        <p className={`text-sm font-bold text-emerald-500 mt-4 p-4 bg-emerald-500/10 rounded-xl border border-emerald-500/20`}>
+                          Saved: {userAddress}
+                        </p>
+                      )}
+                    </div>
+
                     <div className={`p-6 md:p-8 ${t.glassPanel} rounded-[2rem] border ${t.glassInnerBorder} shadow-inner`}>
                       <h4 className={`font-black ${t.heading} text-lg mb-2`}>Network Status</h4>
                       <p className={`text-sm ${t.muted} mb-6`}>You are currently using PrintLayers as a customer. Become a partner to receive jobs and earn.</p>
@@ -984,14 +1000,14 @@ export default function App() {
           
           <button 
             onClick={() => navigateTo('home')} 
-            className={`p-3.5 rounded-2xl transition-all duration-300 flex flex-col items-center gap-1 ${currentView === 'home' ? activeBtnClass : inactiveBtnClass}`}
+            className={`p-3.5 rounded-2xl transition-all duration-300 flex flex-col items-center gap-1 w-20 ${currentView === 'home' ? activeBtnClass : inactiveBtnClass}`}
           >
             <Home size={24} strokeWidth={currentView === 'home' ? 2.5 : 2} />
           </button>
           
           <button 
             onClick={() => navigateTo('search')} 
-            className={`p-3.5 rounded-2xl transition-all duration-300 flex flex-col items-center gap-1 ${currentView === 'search' ? activeBtnClass : inactiveBtnClass}`}
+            className={`p-3.5 rounded-2xl transition-all duration-300 flex flex-col items-center gap-1 w-20 ${currentView === 'search' ? activeBtnClass : inactiveBtnClass}`}
           >
             <Search size={24} strokeWidth={currentView === 'search' ? 2.5 : 2} />
           </button>
@@ -1007,19 +1023,20 @@ export default function App() {
           
           <button 
             onClick={() => navigateTo('cart')} 
-            className={`p-3.5 rounded-2xl transition-all duration-300 flex flex-col items-center gap-1 relative ${currentView === 'cart' ? activeBtnClass : inactiveBtnClass}`}
+            className={`p-3.5 rounded-2xl transition-all duration-300 flex flex-col items-center gap-1 relative w-20 ${currentView === 'cart' ? activeBtnClass : inactiveBtnClass}`}
           >
             <ShoppingCart size={24} strokeWidth={currentView === 'cart' ? 2.5 : 2} />
             {cart.length > 0 && (
-              <span className="absolute top-2.5 right-2.5 w-3 h-3 bg-red-500 border-2 border-gray-900 rounded-full shadow-[0_0_10px_rgba(239,68,68,0.5)]"></span>
+              <span className="absolute top-2.5 right-6 w-3 h-3 bg-red-500 border-2 border-gray-900 rounded-full shadow-[0_0_10px_rgba(239,68,68,0.5)]"></span>
             )}
           </button>
 
           <button 
             onClick={() => navigateTo('profile')} 
-            className={`p-3.5 rounded-2xl transition-all duration-300 flex flex-col items-center gap-1 ${['profile', 'partner', 'admin'].includes(currentView) ? activeBtnClass : inactiveBtnClass}`}
+            className={`p-3.5 rounded-2xl transition-all duration-300 flex flex-col items-center gap-1 w-20 ${['profile', 'partner', 'admin'].includes(currentView) ? activeBtnClass : inactiveBtnClass}`}
           >
             <User size={24} strokeWidth={['profile', 'partner', 'admin'].includes(currentView) ? 2.5 : 2} />
+            {userAddress && <span className="text-[9px] font-black truncate w-full text-center px-1 opacity-80">{userAddress.split(',')[0]}</span>}
           </button>
 
         </nav>
