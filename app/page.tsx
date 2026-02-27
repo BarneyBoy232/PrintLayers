@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useEffect, useState, useRef } from 'react';
-import { Home, Search, Plus, ShoppingCart, User, Settings, Store, ArrowLeft, Sun, Moon, Layers, Zap } from 'lucide-react';
+import { Home, Search, Plus, ShoppingCart, User, Settings, Store, ArrowLeft, Sun, Moon, Layers, Zap, Printer, Box, MapPin, CreditCard, Camera, BarChart3, ListOrdered, Users, AlertTriangle, Edit3 } from 'lucide-react';
 
-const ADMIN_EMAIL = 'ethan.barnacoat@gmail.com';
+const INITIAL_ADMINS = ['ethan.barnacoat@gmail.com'];
 const SUPABASE_URL = 'https://xijtyfewiimfcwoodxlq.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhpanR5ZmV3aWltZmN3b29keGxxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY0NzA4ODQsImV4cCI6MjA4MjA0Njg4NH0.tc4usglFmTnLKJSEfw_KAdHCiltpykUtaBo9bhppdjw';
 
@@ -197,6 +197,9 @@ export default function App() {
   const [importUrl, setImportUrl] = useState('');
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [admins, setAdmins] = useState<string[]>(INITIAL_ADMINS);
+  const [newAdminEmail, setNewAdminEmail] = useState('');
+  const [adminTab, setAdminTab] = useState<'overview' | 'orders' | 'partners' | 'disputes' | 'settings'>('overview');
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -262,13 +265,20 @@ export default function App() {
   };
 
   const navigateTo = (view: View) => {
-    if (view === 'admin' && user?.email !== ADMIN_EMAIL) { setAuthError("Access Denied: Admins Only."); return; }
+    if (view === 'admin' && (!user || !admins.includes(user.email || ''))) { setAuthError("Access Denied: Admins Only."); return; }
     // Enforce authentication for protected routes
     if (!user && !['home', 'search', 'store', 'signin', 'catalogue'].includes(view)) { 
       setCurrentView('signin'); 
       return; 
     }
     setCurrentView(view);
+  };
+
+  const handleAddAdmin = () => {
+    if (newAdminEmail && !admins.includes(newAdminEmail)) {
+      setAdmins([...admins, newAdminEmail.toLowerCase()]);
+      setNewAdminEmail('');
+    }
   };
 
   const handleImport = (e: React.FormEvent) => {
@@ -343,7 +353,7 @@ export default function App() {
             <button onClick={() => setIsDarkMode(!isDarkMode)} className={`p-2 rounded-full transition-colors ${isDarkMode ? 'text-orange-400 hover:bg-orange-500/20' : 'text-orange-600 hover:bg-orange-500/20'}`}>
               {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
             </button>
-            {user?.email === ADMIN_EMAIL && (
+            {user && admins.includes(user.email || '') && (
               <button onClick={() => setCurrentView('admin')} className="p-2 text-purple-500 hover:bg-purple-500/20 rounded-full transition-colors">
                 <Settings size={20} />
               </button>
@@ -408,6 +418,256 @@ export default function App() {
                       <p className={`text-sm ${t.muted} mb-6`}>You are currently using PrintLayers as a customer. Become a partner to receive jobs and earn.</p>
                       <button onClick={() => navigateTo('partner')} className="w-full sm:w-auto bg-orange-500 text-gray-950 px-8 py-4 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-orange-400 shadow-[0_0_20px_rgba(249,115,22,0.2)] transition-all">Register a Printer</button>
                     </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {currentView === 'partner' && user && (
+            <div className="flex-1 flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="max-w-4xl mx-auto w-full space-y-8">
+                <div className="text-center mb-10">
+                  <h2 className={`text-4xl font-black ${t.heading} tracking-tight uppercase mb-4`}>Partner Registration</h2>
+                  <p className={`${t.muted} max-w-xl mx-auto`}>Connect your hardware to the decentralized manufacturing pool and start earning.</p>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-6 md:gap-8">
+                  {/* Hardware Setup */}
+                  <div className={`${t.glassBg} backdrop-blur-2xl p-8 rounded-[2.5rem] border ${t.glassBorder} shadow-xl relative overflow-hidden`}>
+                    <div className="absolute -right-10 -top-10 w-32 h-32 bg-blue-500/10 rounded-full blur-[50px] pointer-events-none"></div>
+                    <div className="flex items-center gap-4 mb-6 relative z-10">
+                      <div className={`w-12 h-12 ${t.itemBg} rounded-[1.25rem] flex items-center justify-center text-blue-500 border ${t.glassInnerBorder}`}><Printer size={20} /></div>
+                      <h3 className={`font-black text-xl ${t.heading}`}>Hardware Setup</h3>
+                    </div>
+                    <div className="space-y-4 relative z-10">
+                      <input type="text" placeholder="Printer Make & Model (e.g. Bambu X1C)" className={`w-full ${t.glassPanel} border ${t.glassInnerBorder} rounded-xl p-4 text-sm font-bold ${t.heading} outline-none focus:border-blue-500 placeholder-${isDarkMode ? 'gray-600' : 'gray-400'}`} />
+                      <div className="grid grid-cols-3 gap-3">
+                        <input type="number" placeholder="Max X (mm)" className={`w-full ${t.glassPanel} border ${t.glassInnerBorder} rounded-xl p-4 text-xs font-bold ${t.heading} outline-none focus:border-blue-500`} />
+                        <input type="number" placeholder="Max Y (mm)" className={`w-full ${t.glassPanel} border ${t.glassInnerBorder} rounded-xl p-4 text-xs font-bold ${t.heading} outline-none focus:border-blue-500`} />
+                        <input type="number" placeholder="Max Z (mm)" className={`w-full ${t.glassPanel} border ${t.glassInnerBorder} rounded-xl p-4 text-xs font-bold ${t.heading} outline-none focus:border-blue-500`} />
+                      </div>
+                      <select className={`w-full ${t.glassPanel} border ${t.glassInnerBorder} rounded-xl p-4 text-sm font-bold ${t.heading} outline-none focus:border-blue-500`}>
+                        <option>Standard Brass Nozzle</option>
+                        <option>Hardened Steel Nozzle (Required for CF/GF)</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Material Inventory */}
+                  <div className={`${t.glassBg} backdrop-blur-2xl p-8 rounded-[2.5rem] border ${t.glassBorder} shadow-xl relative overflow-hidden`}>
+                    <div className="absolute -left-10 -bottom-10 w-32 h-32 bg-orange-500/10 rounded-full blur-[50px] pointer-events-none"></div>
+                    <div className="flex items-center gap-4 mb-6 relative z-10">
+                      <div className={`w-12 h-12 ${t.itemBg} rounded-[1.25rem] flex items-center justify-center text-orange-500 border ${t.glassInnerBorder}`}><Box size={20} /></div>
+                      <h3 className={`font-black text-xl ${t.heading}`}>Material Inventory</h3>
+                    </div>
+                    <div className="space-y-3 max-h-[220px] overflow-y-auto pr-2 custom-scrollbar relative z-10">
+                      {FILAMENT_DATA.filaments.map(f => (
+                        <label key={f.id} className={`flex items-center gap-4 p-4 rounded-xl ${t.glassPanel} border ${t.glassInnerBorder} cursor-pointer hover:border-orange-500/50 transition-all`}>
+                          <input type="checkbox" className="w-5 h-5 rounded border-gray-300 text-orange-500 focus:ring-orange-500 bg-black/20" />
+                          <span className={`font-bold ${t.heading} flex-1`}>{f.name}</span>
+                          {f.type === 'Certified' && <span className="text-[9px] font-black uppercase text-orange-500 bg-orange-500/10 px-2 py-1 rounded-md">Locked</span>}
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Logistics & Location */}
+                  <div className={`${t.glassBg} backdrop-blur-2xl p-8 rounded-[2.5rem] border ${t.glassBorder} shadow-xl relative overflow-hidden`}>
+                    <div className="flex items-center gap-4 mb-6">
+                      <div className={`w-12 h-12 ${t.itemBg} rounded-[1.25rem] flex items-center justify-center text-emerald-500 border ${t.glassInnerBorder}`}><MapPin size={20} /></div>
+                      <h3 className={`font-black text-xl ${t.heading}`}>Logistics</h3>
+                    </div>
+                    <div className="space-y-4">
+                      <input type="text" placeholder="Zip / Postal Code" className={`w-full ${t.glassPanel} border ${t.glassInnerBorder} rounded-xl p-4 text-sm font-bold ${t.heading} outline-none focus:border-emerald-500`} />
+                      <select className={`w-full ${t.glassPanel} border ${t.glassInnerBorder} rounded-xl p-4 text-sm font-bold ${t.heading} outline-none focus:border-emerald-500`}>
+                        <option>Fast Turnaround (24-48 hrs)</option>
+                        <option>Standard Turnaround (3-5 days)</option>
+                        <option>Relaxed Turnaround (1+ weeks)</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Verification & Payouts */}
+                  <div className={`flex flex-col gap-6`}>
+                    <div className={`${t.glassBg} backdrop-blur-2xl p-8 rounded-[2.5rem] border ${t.glassBorder} shadow-xl flex-1 flex flex-col justify-center relative overflow-hidden`}>
+                      <div className="flex items-center gap-4 mb-4">
+                        <div className={`w-12 h-12 ${t.itemBg} rounded-[1.25rem] flex items-center justify-center text-rose-500 border ${t.glassInnerBorder}`}><Camera size={20} /></div>
+                        <h3 className={`font-black text-xl ${t.heading}`}>Quality Proof</h3>
+                      </div>
+                      <button className={`w-full ${t.glassPanel} border-2 border-dashed ${t.glassInnerBorder} rounded-xl p-6 text-sm font-bold ${t.muted} hover:border-rose-500 hover:text-rose-500 transition-all`}>
+                        Upload Calibration Print Photo
+                      </button>
+                    </div>
+
+                    <div className={`${t.glassBg} backdrop-blur-2xl p-8 rounded-[2.5rem] border ${t.glassBorder} shadow-xl flex-1 flex flex-col justify-center relative overflow-hidden`}>
+                      <div className="flex items-center gap-4 mb-4">
+                        <div className={`w-12 h-12 ${t.itemBg} rounded-[1.25rem] flex items-center justify-center text-purple-500 border ${t.glassInnerBorder}`}><CreditCard size={20} /></div>
+                        <h3 className={`font-black text-xl ${t.heading}`}>Payouts</h3>
+                      </div>
+                      <button className={`w-full bg-[#635BFF] text-white py-4 rounded-xl font-black text-sm shadow-[0_0_20px_rgba(99,91,255,0.3)] hover:bg-[#5851E5] transition-all`}>
+                        Connect Stripe
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-6">
+                  <button className="w-full bg-orange-500 text-gray-950 py-5 rounded-2xl font-black uppercase tracking-widest text-sm shadow-[0_0_30px_rgba(249,115,22,0.3)] hover:bg-orange-400 active:scale-95 transition-all">Submit Registration</button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {currentView === 'admin' && user && admins.includes(user.email || '') && (
+            <div className="flex-1 flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className={`w-full ${t.glassBg} backdrop-blur-2xl p-10 md:p-12 rounded-[3rem] shadow-2xl border ${t.glassBorder} text-left relative overflow-hidden min-h-[70vh]`}>
+                <div className="absolute top-0 right-0 -mt-20 -mr-20 w-80 h-80 bg-purple-500/10 rounded-full blur-[100px] pointer-events-none"></div>
+                <div className="relative z-10 h-full flex flex-col">
+                  
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
+                    <div>
+                      <h2 className={`text-4xl font-black ${t.heading} tracking-tight uppercase mb-2`}>God View</h2>
+                      <p className={`${t.muted}`}>Platform control center and network health.</p>
+                    </div>
+                    {/* Admin Navigation Pills */}
+                    <div className={`flex flex-wrap gap-2 p-2 ${t.glassPanel} rounded-2xl border ${t.glassInnerBorder} shadow-inner`}>
+                      {[
+                        { id: 'overview', icon: <BarChart3 size={16} />, label: 'Overview' },
+                        { id: 'orders', icon: <ListOrdered size={16} />, label: 'Orders' },
+                        { id: 'partners', icon: <Users size={16} />, label: 'Partners' },
+                        { id: 'disputes', icon: <AlertTriangle size={16} />, label: 'Disputes' },
+                        { id: 'settings', icon: <Settings size={16} />, label: 'Settings' }
+                      ].map(tab => (
+                        <button 
+                          key={tab.id} 
+                          onClick={() => setAdminTab(tab.id as any)} 
+                          className={`flex items-center gap-2 px-5 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${adminTab === tab.id ? 'bg-purple-500 text-white shadow-[0_0_20px_rgba(168,85,247,0.4)]' : t.muted + ' hover:' + t.heading}`}
+                        >
+                          {tab.icon} <span className="hidden sm:inline">{tab.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  {/* Tab Contents */}
+                  <div className="flex-1">
+                    
+                    {adminTab === 'overview' && (
+                      <div className="grid md:grid-cols-3 gap-6 animate-in fade-in">
+                        <div className={`p-8 ${t.glassPanel} rounded-[2rem] border ${t.glassInnerBorder} shadow-inner flex flex-col items-center justify-center text-center`}>
+                          <p className={`text-xs font-black uppercase tracking-widest ${t.muted} mb-2`}>Total Volume (30d)</p>
+                          <p className={`text-4xl font-black text-emerald-500`}>$14,209</p>
+                        </div>
+                        <div className={`p-8 ${t.glassPanel} rounded-[2rem] border ${t.glassInnerBorder} shadow-inner flex flex-col items-center justify-center text-center`}>
+                          <p className={`text-xs font-black uppercase tracking-widest ${t.muted} mb-2`}>Platform Fees</p>
+                          <p className={`text-4xl font-black text-purple-500`}>$2,131</p>
+                        </div>
+                        <div className={`p-8 ${t.glassPanel} rounded-[2rem] border ${t.glassInnerBorder} shadow-inner flex flex-col items-center justify-center text-center`}>
+                          <p className={`text-xs font-black uppercase tracking-widest ${t.muted} mb-2`}>Pending Payouts</p>
+                          <p className={`text-4xl font-black text-orange-500`}>$840</p>
+                        </div>
+                        <div className={`md:col-span-3 p-8 ${t.itemBg} rounded-[2rem] border ${t.glassInnerBorder} h-64 flex items-center justify-center text-center`}>
+                          <p className={`${t.muted} font-bold italic`}>Chart Visualization Placeholder</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {adminTab === 'orders' && (
+                      <div className={`w-full overflow-x-auto ${t.glassPanel} rounded-[2rem] border ${t.glassInnerBorder} shadow-inner p-6 animate-in fade-in`}>
+                        <table className="w-full text-left border-collapse min-w-[600px]">
+                          <thead>
+                            <tr className={`border-b ${t.glassInnerBorder} text-xs uppercase tracking-widest ${t.muted}`}>
+                              <th className="p-4 font-black">Order ID</th>
+                              <th className="p-4 font-black">Status</th>
+                              <th className="p-4 font-black">Partner</th>
+                              <th className="p-4 font-black">Value</th>
+                              <th className="p-4 font-black text-right">Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {['#ORD-8821', '#ORD-8822', '#ORD-8823'].map((ord, i) => (
+                              <tr key={ord} className={`border-b ${t.glassInnerBorder} last:border-0 hover:${t.itemBg} transition-colors`}>
+                                <td className={`p-4 font-bold ${t.heading}`}>{ord}</td>
+                                <td className="p-4"><span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase ${i===0 ? 'bg-orange-500/20 text-orange-500' : 'bg-emerald-500/20 text-emerald-500'}`}>{i===0 ? 'Printing' : 'Shipped'}</span></td>
+                                <td className={`p-4 font-medium ${t.muted}`}>partner_{i+1}@sys.com</td>
+                                <td className={`p-4 font-bold ${t.heading}`}>${(40 + i*15).toFixed(2)}</td>
+                                <td className="p-4 text-right">
+                                  <button className={`text-[10px] font-black text-purple-500 hover:text-purple-400 uppercase tracking-widest`}>Manage</button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+
+                    {adminTab === 'partners' && (
+                      <div className="space-y-4 animate-in fade-in">
+                        {[
+                          { email: 'top_printer@gmail.com', prints: 142, hours: 450, rating: 4.9, isCert: true },
+                          { email: 'new_guy99@yahoo.com', prints: 12, hours: 25, rating: 4.5, isCert: false }
+                        ].map((p, i) => (
+                          <div key={i} className={`flex flex-col sm:flex-row items-start sm:items-center justify-between p-6 rounded-[2rem] ${t.glassPanel} border ${t.glassInnerBorder} shadow-inner gap-4`}>
+                            <div>
+                              <p className={`font-black ${t.heading} text-lg mb-1`}>{p.email}</p>
+                              <div className="flex gap-4 text-xs font-bold text-gray-500">
+                                <span>{p.prints} Prints</span>
+                                <span>{p.hours} Hrs</span>
+                                <span className="text-yellow-500 flex items-center gap-1">★ {p.rating}</span>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-4 w-full sm:w-auto">
+                              <span className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border ${p.isCert ? 'bg-orange-500/10 border-orange-500/30 text-orange-500' : t.itemBg + ' ' + t.glassInnerBorder + ' ' + t.muted}`}>
+                                {p.isCert ? 'Certified' : 'Basic'}
+                              </span>
+                              <button className={`flex-1 sm:flex-none bg-purple-600/20 text-purple-500 border border-purple-500/30 px-6 py-3 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-purple-600 hover:text-white transition-all`}>
+                                Toggle Cert
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {adminTab === 'disputes' && (
+                      <div className={`p-12 ${t.glassPanel} rounded-[2rem] border ${t.glassInnerBorder} shadow-inner flex flex-col items-center justify-center text-center animate-in fade-in`}>
+                        <div className={`w-20 h-20 bg-emerald-500/10 rounded-[1.5rem] flex items-center justify-center mb-4 text-emerald-500 border border-emerald-500/20 shadow-inner`}>
+                          <Zap size={32} />
+                        </div>
+                        <h3 className={`text-xl font-black ${t.heading}`}>Zero Active Disputes</h3>
+                        <p className={`${t.muted} text-sm mt-2`}>The network is operating perfectly.</p>
+                      </div>
+                    )}
+
+                    {adminTab === 'settings' && (
+                      <div className="grid md:grid-cols-2 gap-8 animate-in fade-in">
+                        <div className={`p-6 md:p-8 ${t.glassPanel} rounded-[2rem] border ${t.glassInnerBorder} shadow-inner`}>
+                          <h4 className={`font-black ${t.heading} text-lg mb-6 flex items-center gap-2`}><User size={18} className="text-purple-500"/> Manage Access</h4>
+                          <div className="flex flex-col xl:flex-row gap-4 mb-8">
+                            <input type="email" placeholder="New admin email..." value={newAdminEmail} onChange={(e) => setNewAdminEmail(e.target.value)} className={`flex-1 px-5 py-4 rounded-2xl ${t.itemBg} border ${t.glassInnerBorder} outline-none focus:border-purple-500 ${t.heading} placeholder-${isDarkMode ? 'gray-600' : 'gray-400'} text-sm font-medium transition-all shadow-inner`} />
+                            <button onClick={handleAddAdmin} className="bg-purple-600 text-white px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-purple-500 shadow-[0_0_20px_rgba(168,85,247,0.2)] transition-all">Grant</button>
+                          </div>
+                          <div className="space-y-3">
+                            {admins.map(email => (
+                              <div key={email} className={`flex justify-between items-center p-4 rounded-2xl ${t.itemBg} border ${t.glassInnerBorder}`}>
+                                <span className={`${t.heading} font-medium text-sm truncate pr-4`}>{email}</span>
+                                {email !== INITIAL_ADMINS[0] && (
+                                  <button onClick={() => setAdmins(admins.filter(a => a !== email))} className="text-red-500 hover:text-red-400 text-[10px] font-black uppercase tracking-widest transition-colors flex-shrink-0">Revoke</button>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className={`p-6 md:p-8 ${t.glassPanel} rounded-[2rem] border ${t.glassInnerBorder} shadow-inner flex flex-col items-start`}>
+                          <h4 className={`font-black ${t.heading} text-lg mb-4 flex items-center gap-2`}><Edit3 size={18} className="text-purple-500"/> Catalogue Editor</h4>
+                          <p className={`${t.muted} text-sm mb-8 leading-relaxed`}>Modify filament properties, adjust scale thresholds, and update pricing multipliers for the network.</p>
+                          <button className="mt-auto w-full bg-purple-500/10 text-purple-500 border border-purple-500/20 py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-purple-500 hover:text-white transition-all shadow-sm">Open Editor JSON</button>
+                        </div>
+                      </div>
+                    )}
+
                   </div>
                 </div>
               </div>
