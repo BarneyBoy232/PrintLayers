@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, useRef } from 'react';
-import { Home, Search, Plus, ShoppingCart, User, Settings, Store, ArrowLeft, Sun, Moon } from 'lucide-react';
+import { Home, Search, Plus, ShoppingCart, User, Settings, Store, ArrowLeft, Sun, Moon, Layers } from 'lucide-react';
 
 const ADMIN_EMAIL = 'ethan.barnacoat@gmail.com';
 const SUPABASE_URL = 'https://xijtyfewiimfcwoodxlq.supabase.co';
@@ -23,9 +23,41 @@ interface CartItem {
   weight: number;
 }
 
-type View = 'home' | 'search' | 'adjust' | 'store' | 'partner' | 'signin' | 'cart' | 'admin' | 'profile';
+type View = 'home' | 'search' | 'adjust' | 'store' | 'partner' | 'signin' | 'cart' | 'admin' | 'profile' | 'catalogue';
 
 const PARTNER_FILAMENTS: Record<string, string[]> = {}; 
+
+const FILAMENT_DATA = {
+  "filaments": [
+    { "id": "pla", "name": "PLA", "type": "Basic", "trait": "Best for Detail", "stats": { "strength": 6, "weather": 2, "flex": 1, "brittleness": 9, "heat_resist": 2, "price": 2 } },
+    { "id": "asa", "name": "ASA", "type": "Basic", "trait": "Best for Outdoors", "stats": { "strength": 7, "weather": 10, "flex": 3, "brittleness": 4, "heat_resist": 8, "price": 4 } },
+    { "id": "tpu-80a", "name": "TPU-80A", "type": "Basic", "trait": "Best for Flexibility", "stats": { "strength": 4, "weather": 8, "flex": 10, "brittleness": 1, "heat_resist": 4, "price": 6 } },
+    { "id": "pc", "name": "PC", "type": "Certified", "trait": "Best for Strength", "stats": { "strength": 10, "weather": 5, "flex": 3, "brittleness": 3, "heat_resist": 9, "price": 8 } },
+    { "id": "pp", "name": "PP", "type": "Certified", "trait": "Best for Chemicals", "stats": { "strength": 5, "weather": 9, "flex": 8, "brittleness": 1, "heat_resist": 7, "price": 7 } },
+    { "id": "petg", "name": "PETG", "type": "Basic", "trait": "Best All-Rounder", "stats": { "strength": 7, "weather": 7, "flex": 4, "brittleness": 3, "heat_resist": 5, "price": 3 } },
+    { "id": "pla-cf", "name": "PLA-CF", "type": "Basic", "trait": "Best Aesthetics", "stats": { "strength": 8, "weather": 2, "flex": 1, "brittleness": 10, "heat_resist": 3, "price": 5 } },
+    { "id": "nylon-gf", "name": "Nylon-GF", "type": "Certified", "trait": "Industrial Wear", "stats": { "strength": 9, "weather": 6, "flex": 5, "brittleness": 2, "heat_resist": 9, "price": 9 } },
+    { "id": "petg-cf", "name": "PETG-CF", "type": "Basic", "trait": "Mechanical Parts", "stats": { "strength": 8, "weather": 7, "flex": 3, "brittleness": 4, "heat_resist": 6, "price": 5 } },
+    { "id": "abs", "name": "ABS", "type": "Basic", "trait": "Impact Resistance", "stats": { "strength": 6, "weather": 4, "flex": 4, "brittleness": 3, "heat_resist": 8, "price": 3 } },
+    { "id": "pc-cf", "name": "PC-CF", "type": "Certified", "trait": "Zero-Warp Strength", "stats": { "strength": 10, "weather": 5, "flex": 2, "brittleness": 5, "heat_resist": 9, "price": 10 } },
+    { "id": "tpu-99d", "name": "TPU-99D", "type": "Basic", "trait": "Hard Rubber", "stats": { "strength": 7, "weather": 8, "flex": 6, "brittleness": 1, "heat_resist": 6, "price": 7 } },
+    { "id": "pp-gf", "name": "PP-GF", "type": "Certified", "trait": "Structural Tools", "stats": { "strength": 8, "weather": 9, "flex": 5, "brittleness": 2, "heat_resist": 8, "price": 9 } }
+  ],
+  "metadata": {
+    "reinforcements": {
+      "CF": { "full_name": "Carbon Fiber", "benefits": "Increased rigidity, reduced warping, premium matte finish", "hardware_requirement": "Hardened Steel Nozzle" },
+      "GF": { "full_name": "Glass Fiber", "benefits": "Dimensional stability, improved impact resistance (less brittle than CF)", "hardware_requirement": "Hardened Steel Nozzle" }
+    },
+    "naming_conventions": {
+      "TPU_Shore_Hardness": {
+        "Scale_A": "Measures flexible/soft rubbers (e.g., 80A is soft like a shoe sole)",
+        "Scale_D": "Measures hard rubbers/soft plastics (e.g., 99D is rigid like a shopping cart wheel)",
+        "logic": "Higher numbers = harder material; A is softer than D"
+      },
+      "Price_Scale": { "logic": "1 = Budget/Entry-level; 10 = Premium/Industrial Expense" }
+    }
+  }
+};
 
 const useTheme = (isDark: boolean) => ({
   bg: isDark ? 'bg-[#0a0a0a]' : 'bg-[#f8fafc]',
@@ -239,6 +271,7 @@ export default function App() {
       case 'signin': return 'Authentication';
       case 'admin': return 'Admin Panel';
       case 'profile': return 'Profile';
+      case 'catalogue': return 'Materials';
       default: return 'PrintLayers';
     }
   };
@@ -356,7 +389,7 @@ export default function App() {
                 </div>
               </div>
 
-              <div className="w-full grid md:grid-cols-2 gap-4 md:gap-6">
+              <div className="w-full grid md:grid-cols-3 gap-4 md:gap-6">
                 <div className={`w-full ${t.glassBg} backdrop-blur-2xl p-8 md:p-10 rounded-[2.5rem] shadow-lg border ${t.glassBorder} hover:border-orange-500/30 ${t.itemHover} active:scale-[0.98] transition-all cursor-pointer group flex flex-col justify-between`} onClick={() => navigateTo('search')}>
                   <div>
                     <div className={`w-14 h-14 ${t.itemBg} rounded-[1.5rem] flex items-center justify-center text-orange-500 mb-8 border ${t.glassInnerBorder} group-hover:scale-110 transition-transform shadow-inner`}><Search size={26} /></div>
@@ -372,6 +405,14 @@ export default function App() {
                     <p className={`text-sm ${t.muted} leading-relaxed font-medium`}>Browse curated, ready-to-print utility parts and popular models.</p>
                   </div>
                 </div>
+
+                <div className={`w-full ${t.glassBg} backdrop-blur-2xl p-8 md:p-10 rounded-[2.5rem] shadow-lg border ${t.glassBorder} hover:border-rose-500/30 ${t.itemHover} active:scale-[0.98] transition-all cursor-pointer group flex flex-col justify-between`} onClick={() => navigateTo('catalogue')}>
+                  <div>
+                    <div className={`w-14 h-14 ${t.itemBg} rounded-[1.5rem] flex items-center justify-center text-rose-500 mb-8 border ${t.glassInnerBorder} group-hover:scale-110 transition-transform shadow-inner`}><Layers size={26} /></div>
+                    <h3 className={`font-black text-2xl ${t.heading} mb-3 tracking-tight`}>Materials</h3>
+                    <p className={`text-sm ${t.muted} leading-relaxed font-medium`}>Explore our filament catalogue and compare mechanical properties.</p>
+                  </div>
+                </div>
               </div>
 
               <div className={`w-full ${t.glassBg} backdrop-blur-2xl p-8 md:p-10 rounded-[2.5rem] shadow-xl border ${t.glassBorder} text-center sm:text-left flex flex-col sm:flex-row items-center justify-between gap-8`}>
@@ -380,6 +421,59 @@ export default function App() {
                   <p className={`text-sm ${t.muted} font-medium`}>Add your machine to the pool and earn money fulfilling jobs.</p>
                 </div>
                 <button onClick={() => navigateTo('partner')} className={`${t.itemBg} ${t.heading} px-8 py-4 rounded-xl font-black text-xs uppercase tracking-widest ${t.itemHover} shadow-lg transition-all w-full sm:w-auto border ${t.glassInnerBorder}`}>Register Partner</button>
+              </div>
+            </div>
+          )}
+
+          {currentView === 'catalogue' && (
+            <div className="flex-1 flex flex-col gap-6 md:gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {FILAMENT_DATA.filaments.map((f) => (
+                  <div key={f.id} className={`${t.glassBg} backdrop-blur-xl p-8 rounded-[2.5rem] border ${t.glassBorder} shadow-lg hover:shadow-xl transition-shadow flex flex-col`}>
+                    <div className="flex justify-between items-start mb-2">
+                      <h4 className={`font-black text-2xl ${t.heading} tracking-tight`}>{f.name}</h4>
+                      <span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest ${f.type === 'Certified' ? 'bg-orange-500/20 text-orange-500 border border-orange-500/30' : t.itemBg + ' ' + t.muted + ' border ' + t.glassInnerBorder}`}>
+                        {f.type}
+                      </span>
+                    </div>
+                    <p className={`text-xs ${t.muted} font-bold italic mb-6`}>{f.trait}</p>
+                    
+                    <div className={`space-y-3 mt-auto p-5 rounded-[1.5rem] ${t.glassPanel} border ${t.glassInnerBorder} shadow-inner`}>
+                      {Object.entries(f.stats).map(([key, val]) => (
+                        <div key={key} className="flex items-center justify-between gap-3 text-[10px]">
+                          <span className={`${t.muted} w-20 uppercase font-bold tracking-wider truncate`}>{key.replace('_', ' ')}</span>
+                          <div className={`flex-1 h-1.5 ${isDarkMode ? 'bg-white/10' : 'bg-black/10'} rounded-full overflow-hidden`}>
+                            <div className={`h-full bg-orange-500 rounded-full`} style={{ width: `${(val as number) * 10}%` }}></div>
+                          </div>
+                          <span className={`${t.heading} font-black w-4 text-right`}>{val as number}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className={`w-full ${t.glassBg} backdrop-blur-2xl p-8 md:p-10 rounded-[3rem] border ${t.glassBorder} shadow-xl`}>
+                <h3 className={`font-black text-2xl ${t.heading} mb-8 tracking-tight flex items-center gap-3`}><Layers className="text-orange-500" /> Material Additives & Guides</h3>
+                <div className="grid md:grid-cols-2 gap-8">
+                  <div className={`p-6 ${t.glassPanel} rounded-[2rem] border ${t.glassInnerBorder} shadow-inner`}>
+                    <h4 className={`font-black text-lg ${t.heading} mb-4`}>Reinforcements</h4>
+                    {Object.entries(FILAMENT_DATA.metadata.reinforcements).map(([key, data]) => (
+                      <div key={key} className="mb-4 last:mb-0">
+                        <p className={`text-sm font-black ${t.heading} mb-1`}>{key} - {data.full_name}</p>
+                        <p className={`text-xs ${t.muted} leading-relaxed`}>{data.benefits}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <div className={`p-6 ${t.glassPanel} rounded-[2rem] border ${t.glassInnerBorder} shadow-inner`}>
+                    <h4 className={`font-black text-lg ${t.heading} mb-4`}>Naming Conventions</h4>
+                    <div className="mb-4">
+                      <p className={`text-sm font-black ${t.heading} mb-1`}>TPU Hardness</p>
+                      <p className={`text-xs ${t.muted} leading-relaxed mb-1`}>{FILAMENT_DATA.metadata.naming_conventions.TPU_Shore_Hardness.Scale_A}</p>
+                      <p className={`text-xs ${t.muted} leading-relaxed`}>{FILAMENT_DATA.metadata.naming_conventions.TPU_Shore_Hardness.Scale_D}</p>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           )}
