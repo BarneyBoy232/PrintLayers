@@ -118,9 +118,16 @@ const useTheme = (isDark: boolean) => ({
 function AddressAutocomplete({ t, placeholder, isLoaded, onPlaceSelected }: { t: any, placeholder: string, isLoaded: boolean, onPlaceSelected?: (address: string) => void }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const autocompleteRef = useRef<any>(null);
+  const callbackRef = useRef(onPlaceSelected);
+
+  // Keep callback up to date without re-triggering the maps initialization
+  useEffect(() => {
+    callbackRef.current = onPlaceSelected;
+  }, [onPlaceSelected]);
 
   useEffect(() => {
-    if (!isLoaded || !inputRef.current || !(window as any).google) return;
+    // Only initialize once Google is loaded, the input exists, and we haven't already initialized
+    if (!isLoaded || !inputRef.current || !(window as any).google || autocompleteRef.current) return;
     
     autocompleteRef.current = new (window as any).google.maps.places.Autocomplete(inputRef.current, {
       fields: ['formatted_address'],
@@ -129,11 +136,11 @@ function AddressAutocomplete({ t, placeholder, isLoaded, onPlaceSelected }: { t:
 
     autocompleteRef.current.addListener('place_changed', () => {
       const place = autocompleteRef.current.getPlace();
-      if (onPlaceSelected && place.formatted_address) {
-        onPlaceSelected(place.formatted_address);
+      if (callbackRef.current && place.formatted_address) {
+        callbackRef.current(place.formatted_address);
       }
     });
-  }, [isLoaded, onPlaceSelected]);
+  }, [isLoaded]);
 
   return (
     <input 
