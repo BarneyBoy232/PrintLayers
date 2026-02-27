@@ -234,6 +234,7 @@ export default function App() {
   const [adminTab, setAdminTab] = useState<'overview' | 'orders' | 'partners' | 'disputes' | 'settings'>('overview');
   const [isGoogleLoaded, setIsGoogleLoaded] = useState(false);
   const [userAddress, setUserAddress] = useState('');
+  const [showAddressPrompt, setShowAddressPrompt] = useState(false);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -244,8 +245,16 @@ export default function App() {
   const isInitialized = useRef(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const authListenerRef = useRef<any>(null);
+  const hasPromptedAddress = useRef(false);
 
   const t = useTheme(isDarkMode);
+
+  useEffect(() => {
+    if (user && !userAddress && !hasPromptedAddress.current) {
+      setShowAddressPrompt(true);
+      hasPromptedAddress.current = true;
+    }
+  }, [user, userAddress]);
 
   useEffect(() => {
     if (isInitialized.current) return;
@@ -379,6 +388,39 @@ export default function App() {
       <div className={`absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-orange-600/15 rounded-full blur-[120px] pointer-events-none ${t.ambientMix} transition-all duration-700`} />
       <div className={`absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-rose-600/15 rounded-full blur-[100px] pointer-events-none ${t.ambientMix} transition-all duration-700`} />
       <div className={`absolute top-[40%] left-[60%] w-[30%] h-[30%] bg-amber-600/15 rounded-full blur-[100px] pointer-events-none ${t.ambientMix} transition-all duration-700`} />
+
+      {/* Address Prompt Modal */}
+      {showAddressPrompt && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className={`w-full max-w-md ${t.glassBg} backdrop-blur-2xl p-8 rounded-[3rem] shadow-2xl border ${t.glassBorder} relative overflow-hidden`}>
+            <div className="absolute top-0 right-0 -mt-10 -mr-10 w-40 h-40 bg-emerald-500/20 rounded-full blur-[50px] pointer-events-none"></div>
+            <div className="relative z-10">
+              <div className={`w-16 h-16 ${t.itemBg} rounded-[1.5rem] flex items-center justify-center mb-6 text-emerald-500 border ${t.glassInnerBorder} shadow-inner`}>
+                <MapPin size={32} />
+              </div>
+              <h3 className={`text-2xl font-black ${t.heading} mb-2 tracking-tight`}>Where to?</h3>
+              <p className={`${t.muted} text-sm mb-6 leading-relaxed`}>Set your delivery address to unlock accurate network shipping quotes.</p>
+              
+              <AddressAutocomplete 
+                t={t} 
+                placeholder="Start typing your address..." 
+                isLoaded={isGoogleLoaded}
+                onChange={(addr) => {
+                  setUserAddress(addr);
+                  setTimeout(() => setShowAddressPrompt(false), 600); // Auto-close smoothly after picking
+                }}
+              />
+              
+              <button 
+                onClick={() => setShowAddressPrompt(false)} 
+                className={`mt-6 w-full ${t.itemBg} ${t.itemHover} ${t.heading} py-4 rounded-2xl font-bold transition-all text-sm border ${t.glassInnerBorder}`}
+              >
+                Skip for now
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Dynamic App Header */}
       <header className={`flex-shrink-0 px-6 py-5 ${isDarkMode ? 'bg-black/20' : 'bg-white/20'} backdrop-blur-2xl z-40 sticky top-0 border-b ${t.glassInnerBorder}`}>
