@@ -211,7 +211,7 @@ export default function App() {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [admins, setAdmins] = useState<string[]>(INITIAL_ADMINS);
   const [newAdminEmail, setNewAdminEmail] = useState('');
-  const [adminTab, setAdminTab] = useState<'overview' | 'orders' | 'partners' | 'disputes' | 'settings'>('overview');
+  const [adminTab, setAdminTab] = useState<'overview' | 'orders' | 'partners' | 'accounts' | 'disputes' | 'settings'>('overview');
   const [isGoogleLoaded, setIsGoogleLoaded] = useState(false);
   const [userAddress, setUserAddress] = useState('');
   const [tempAddress, setTempAddress] = useState('');
@@ -632,7 +632,8 @@ export default function App() {
                       {[
                         { id: 'overview', icon: <BarChart3 size={16} />, label: 'Overview' },
                         { id: 'orders', icon: <ListOrdered size={16} />, label: 'Orders' },
-                        { id: 'partners', icon: <Users size={16} />, label: 'Partners' },
+                        { id: 'partners', icon: <Printer size={16} />, label: 'Partners' },
+                        { id: 'accounts', icon: <Users size={16} />, label: 'Accounts' },
                         { id: 'disputes', icon: <AlertTriangle size={16} />, label: 'Disputes' },
                         { id: 'settings', icon: <Settings size={16} />, label: 'Settings' }
                       ].map(tab => (
@@ -680,9 +681,17 @@ export default function App() {
 
                     {adminTab === 'partners' && (
                       <div className={`w-full ${t.glassPanel} rounded-[2rem] border ${t.glassInnerBorder} shadow-inner p-6 animate-in fade-in flex flex-col items-center justify-center min-h-[300px]`}>
-                        <Users size={48} className={`${t.muted} mb-4 opacity-50`} />
+                        <Printer size={48} className={`${t.muted} mb-4 opacity-50`} />
                         <h3 className={`text-xl font-black ${t.heading}`}>No Partners Registered</h3>
-                        <p className={`${t.muted} text-sm mt-2`}>Partner network is currently empty.</p>
+                        <p className={`${t.muted} text-sm mt-2`}>Partner hardware network is currently empty.</p>
+                      </div>
+                    )}
+
+                    {adminTab === 'accounts' && (
+                      <div className={`w-full overflow-x-auto ${t.glassPanel} rounded-[2rem] border ${t.glassInnerBorder} shadow-inner p-6 animate-in fade-in flex flex-col items-center justify-center min-h-[300px]`}>
+                        <Users size={48} className={`${t.muted} mb-4 opacity-50`} />
+                        <h3 className={`text-xl font-black ${t.heading}`}>User Directory</h3>
+                        <p className={`${t.muted} text-sm mt-2`}>All customer and partner account details will appear here.</p>
                       </div>
                     )}
 
