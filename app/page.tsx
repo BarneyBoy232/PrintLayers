@@ -31,10 +31,10 @@ const FILAMENT_DATA = {
   "filaments": [
     { "id": "pla", "name": "PLA", "type": "Basic", "trait": "Best for Detail", "stats": { "strength": 6, "weather": 2, "flex": 1, "brittleness": 9, "heat_resist": 2, "price": 2 } },
     { "id": "asa", "name": "ASA", "type": "Basic", "trait": "Best for Outdoors", "stats": { "strength": 7, "weather": 10, "flex": 3, "brittleness": 4, "heat_resist": 8, "price": 4 } },
+    { "id": "petg", "name": "PETG", "type": "Basic", "trait": "Best All-Rounder", "stats": { "strength": 7, "weather": 7, "flex": 4, "brittleness": 3, "heat_resist": 5, "price": 3 } },
     { "id": "tpu-80a", "name": "TPU-80A", "type": "Basic", "trait": "Best for Flexibility", "stats": { "strength": 4, "weather": 8, "flex": 10, "brittleness": 1, "heat_resist": 4, "price": 6 } },
     { "id": "pc", "name": "PC", "type": "Certified", "trait": "Best for Strength", "stats": { "strength": 10, "weather": 5, "flex": 3, "brittleness": 3, "heat_resist": 9, "price": 8 } },
     { "id": "pp", "name": "PP", "type": "Certified", "trait": "Best for Chemicals", "stats": { "strength": 5, "weather": 9, "flex": 8, "brittleness": 1, "heat_resist": 7, "price": 7 } },
-    { "id": "petg", "name": "PETG", "type": "Basic", "trait": "Best All-Rounder", "stats": { "strength": 7, "weather": 7, "flex": 4, "brittleness": 3, "heat_resist": 5, "price": 3 } },
     { "id": "pla-cf", "name": "PLA-CF", "type": "Basic", "trait": "Best Aesthetics", "stats": { "strength": 8, "weather": 2, "flex": 1, "brittleness": 10, "heat_resist": 3, "price": 5 } },
     { "id": "nylon-gf", "name": "Nylon-GF", "type": "Certified", "trait": "Industrial Wear", "stats": { "strength": 9, "weather": 6, "flex": 5, "brittleness": 2, "heat_resist": 9, "price": 9 } },
     { "id": "petg-cf", "name": "PETG-CF", "type": "Basic", "trait": "Mechanical Parts", "stats": { "strength": 8, "weather": 7, "flex": 3, "brittleness": 4, "heat_resist": 6, "price": 5 } },
