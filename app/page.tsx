@@ -59,6 +59,35 @@ const FILAMENT_DATA = {
   }
 };
 
+// --- Future Partner Certification Logic (Currently Dormant) ---
+// These thresholds dictate when a partner upgrades from printing "Basic" to "Certified" filaments.
+const CERTIFICATION_REQUIREMENTS = {
+  minTotalPrints: 50,      // Minimum successful prints fulfilled
+  minTotalHours: 150,      // Minimum total print hours logged
+  minAverageRating: 4.7    // Minimum required customer rating (out of 5)
+};
+
+// Types for future partner stats integration
+interface PartnerStats {
+  totalPrints: number;
+  totalHours: number;
+  averageRating: number;
+  isManuallyCertified?: boolean; // Admin override
+}
+
+// Helper to evaluate if a partner has unlocked "Certified" filaments. Not yet bound to UI.
+export const checkPartnerCertification = (stats?: PartnerStats): boolean => {
+  if (!stats) return false;
+  if (stats.isManuallyCertified) return true;
+  
+  return (
+    stats.totalPrints >= CERTIFICATION_REQUIREMENTS.minTotalPrints &&
+    stats.totalHours >= CERTIFICATION_REQUIREMENTS.minTotalHours &&
+    stats.averageRating >= CERTIFICATION_REQUIREMENTS.minAverageRating
+  );
+};
+// --------------------------------------------------------------
+
 const useTheme = (isDark: boolean) => ({
   bg: isDark ? 'bg-[#0a0a0a]' : 'bg-[#f8fafc]',
   text: isDark ? 'text-gray-100' : 'text-gray-800',
@@ -226,7 +255,7 @@ export default function App() {
   const navigateTo = (view: View) => {
     if (view === 'admin' && user?.email !== ADMIN_EMAIL) { setAuthError("Access Denied: Admins Only."); return; }
     // Enforce authentication for protected routes
-    if (!user && !['home', 'search', 'store', 'signin'].includes(view)) { 
+    if (!user && !['home', 'search', 'store', 'signin', 'catalogue'].includes(view)) { 
       setCurrentView('signin'); 
       return; 
     }
