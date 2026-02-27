@@ -477,9 +477,10 @@ export default function App() {
                 {FILAMENT_DATA.filaments.map((f) => {
                   const isTopPick = f.id === 'pla' || f.id === 'asa';
                   const highlightStat = f.id === 'pla' ? 'price' : (f.id === 'asa' ? 'weather' : null);
+                  const isAvailable = ['pla', 'asa', 'petg'].includes(f.id);
 
                   return (
-                    <div key={f.id} className={`${t.glassBg} backdrop-blur-xl p-8 rounded-[2.5rem] border ${isTopPick ? 'border-orange-500/50 shadow-[0_0_20px_rgba(249,115,22,0.1)]' : t.glassBorder} hover:shadow-xl transition-shadow flex flex-col relative overflow-hidden`}>
+                    <div key={f.id} className={`${t.glassBg} backdrop-blur-xl p-8 rounded-[2.5rem] border ${isTopPick ? 'border-orange-500/50 shadow-[0_0_20px_rgba(249,115,22,0.1)]' : t.glassBorder} ${isAvailable ? 'hover:shadow-xl transition-shadow' : 'opacity-60'} flex flex-col relative overflow-hidden`}>
                       {isTopPick && (
                         <div className="absolute top-0 right-0 bg-orange-500 text-gray-950 text-[9px] font-black uppercase px-4 py-1.5 rounded-bl-2xl z-10 shadow-md">
                           Top Pick
@@ -488,9 +489,11 @@ export default function App() {
                       
                       <div className="flex justify-between items-start mb-2 relative z-10">
                         <h4 className={`font-black text-2xl ${t.heading} tracking-tight`}>{f.name}</h4>
-                        <span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest ${f.type === 'Certified' ? 'bg-orange-500/20 text-orange-500 border border-orange-500/30' : t.itemBg + ' ' + t.muted + ' border ' + t.glassInnerBorder}`}>
-                          {f.type}
-                        </span>
+                        {!isAvailable && (
+                          <span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest ${t.itemBg} ${t.muted} border ${t.glassInnerBorder}`}>
+                            Coming Soon
+                          </span>
+                        )}
                       </div>
                       <p className={`text-xs ${isTopPick ? 'text-orange-400' : t.muted} font-bold italic mb-6 relative z-10`}>{f.trait}</p>
                       
