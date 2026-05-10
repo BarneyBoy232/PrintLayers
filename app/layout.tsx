@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+// @ts-expect-error - CSS side-effect imports sometimes lack type declarations in specific TS configs
 import './globals.css';
 import ClientWrapper from './ClientWrapper';
 
