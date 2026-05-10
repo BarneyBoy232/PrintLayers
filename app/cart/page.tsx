@@ -1,10 +1,9 @@
 'use client';
-import { ShoppingCart } from 'lucide-react';
+import { ShoppingCart, Store } from 'lucide-react';
 import Link from 'next/link';
 
 export default function CartPage() {
-  // Temporary empty cart mock until global state is wired up
-  const cart: { id: string }[] = []; 
+  const cart: { id: string; name: string; source: string; }[] = []; 
 
   return (
     <div className="flex-1 flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -17,7 +16,30 @@ export default function CartPage() {
           <Link href="/search" className="bg-orange-500 text-gray-950 px-10 py-5 rounded-2xl font-black text-xs uppercase tracking-widest active:scale-95 hover:bg-orange-400 shadow-[0_0_20px_rgba(249,115,22,0.2)] transition-all">Start Discovering</Link>
         </div>
       ) : (
-        <div className="text-center p-10 font-black">Cart Items Go Here</div>
+        <div className="flex flex-col xl:flex-row gap-8 items-start">
+          <div className="flex-1 space-y-4 w-full">
+            {cart.map(item => (
+              <div key={item.id} className="p-8 bg-black/3 dark:bg-white/3 border border-black/10 dark:border-white/10 rounded-[2.5rem] flex items-center justify-between shadow-sm">
+                <div className="flex items-center gap-4">
+                  <Store className="text-orange-500" />
+                  <div>
+                    <h4 className="font-black uppercase tracking-tight">{item.name}</h4>
+                    <p className="text-[10px] text-gray-500 font-bold uppercase">{item.source}</p>
+                  </div>
+                </div>
+                <button className="text-red-500 font-black text-[10px] uppercase hover:bg-red-500/10 px-4 py-2 rounded-xl transition-all">Remove</button>
+              </div>
+            ))}
+          </div>
+          <div className="w-full xl:w-96 p-10 bg-black/3 dark:bg-white/3 border border-black/10 dark:border-white/10 rounded-[3rem] shadow-2xl">
+             <h3 className="font-black uppercase text-xs border-b border-black/5 dark:border-white/5 pb-4 mb-6">Quote Summary</h3>
+             <div className="flex justify-between items-center mb-10 p-6 bg-black/5 dark:bg-white/5 rounded-2xl border border-black/5 dark:border-white/5 shadow-inner">
+               <span className="font-black text-gray-500 uppercase text-xs">Total</span>
+               <span className="text-2xl font-black text-orange-500 tracking-tighter">PENDING</span>
+             </div>
+             <button className="w-full bg-orange-500 text-gray-950 py-5 rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-orange-400 shadow-lg active:scale-95">Request Quote</button>
+          </div>
+        </div>
       )}
     </div>
   );

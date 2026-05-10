@@ -3,11 +3,14 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
-import { Home, Search, Plus, ShoppingCart, User, ArrowLeft, Sun, Moon } from 'lucide-react';
+import { Home, Search, Plus, ShoppingCart, User, ArrowLeft, Sun, Moon, Settings } from 'lucide-react';
+
+const INITIAL_ADMINS = ['ethan.barnacoat@gmail.com'];
 
 export default function ClientWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [user] = useState<{ email?: string } | null>(null);
   
   const t = {
     bg: isDarkMode ? 'bg-[#0a0a0a]' : 'bg-[#f8fafc]',
@@ -19,6 +22,7 @@ export default function ClientWrapper({ children }: { children: React.ReactNode 
     itemHover: isDarkMode ? 'hover:bg-white/10' : 'hover:bg-black/10',
     dockBg: isDarkMode ? 'bg-gray-900/80' : 'bg-white/80',
     ambientMix: isDarkMode ? 'mix-blend-screen' : 'mix-blend-normal',
+    headerGradient: isDarkMode ? 'from-orange-400 to-amber-400' : 'from-orange-500 to-amber-500',
   };
 
   const activeBtnClass = `text-orange-500 ${isDarkMode ? 'bg-white/10' : 'bg-black/10'} scale-110 shadow-inner`;
@@ -40,24 +44,33 @@ export default function ClientWrapper({ children }: { children: React.ReactNode 
                 <ArrowLeft size={20} />
               </Link>
             )}
-            <h1 className={`text-2xl font-black tracking-tighter uppercase ${t.heading}`}>PrintLayers</h1>
+            <h1 className={`text-2xl font-black tracking-tighter uppercase ${pathname === '/' ? `text-transparent bg-clip-text bg-linear-to-r ${t.headerGradient}` : t.heading}`}>
+              PrintLayers
+            </h1>
           </div>
-          <button onClick={() => setIsDarkMode(!isDarkMode)} className={`p-2 rounded-full transition-colors ${isDarkMode ? 'text-orange-400' : 'text-orange-600'}`}>
-            {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
-          </button>
+          <div className="flex items-center gap-3">
+            <button onClick={() => setIsDarkMode(!isDarkMode)} className={`p-2 rounded-full transition-colors ${isDarkMode ? 'text-orange-400' : 'text-orange-600'}`}>
+              {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+            </button>
+            {user && INITIAL_ADMINS.includes(user.email || '') && (
+              <Link href="/admin" className="p-2 text-purple-500 hover:bg-purple-500/20 rounded-full transition-colors">
+                <Settings size={20} />
+              </Link>
+            )}
+          </div>
         </div>
       </header>
 
       {/* Main Content Area */}
       <main className="flex-1 overflow-y-auto w-full custom-scrollbar relative z-10">
-        <div className="max-w-400 mx-auto px-4 sm:px-8 lg:px-12 w-full min-h-full flex flex-col pt-6 pb-64">
+        <div className="max-w-400 mx-auto px-4 sm:px-8 lg:px-12 w-full min-h-full flex flex-col pt-6 pb-64 text-gray-900 dark:text-white">
           {children}
         </div>
       </main>
 
       {/* Bottom Dock */}
       <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 w-[95%] max-w-105">
-        <nav className={`${t.dockBg} backdrop-blur-2xl border ${t.glassBorder} p-3 rounded-[2.5rem] flex items-center justify-between px-5 transition-colors duration-500`}>
+        <nav className={`${t.dockBg} backdrop-blur-2xl border ${t.glassBorder} p-3 rounded-[2.5rem] flex items-center justify-between px-5 transition-colors duration-500 shadow-2xl`}>
           <Link href="/" className={`p-3.5 rounded-2xl flex flex-col items-center w-20 ${pathname === '/' ? activeBtnClass : inactiveBtnClass}`}>
             <Home size={24} strokeWidth={pathname === '/' ? 2.5 : 2} />
           </Link>
@@ -72,7 +85,7 @@ export default function ClientWrapper({ children }: { children: React.ReactNode 
           <Link href="/cart" className={`p-3.5 rounded-2xl flex flex-col items-center w-20 ${pathname === '/cart' ? activeBtnClass : inactiveBtnClass}`}>
             <ShoppingCart size={24} strokeWidth={pathname === '/cart' ? 2.5 : 2} />
           </Link>
-          <Link href="/profile" className={`p-3.5 rounded-2xl flex flex-col items-center w-20 ${pathname.includes('/profile') ? activeBtnClass : inactiveBtnClass}`}>
+          <Link href="/profile" className={`p-3.5 rounded-2xl flex flex-col items-center w-20 ${pathname.includes('/profile') || pathname.includes('/admin') || pathname.includes('/partner') ? activeBtnClass : inactiveBtnClass}`}>
             <User size={24} strokeWidth={pathname.includes('/profile') ? 2.5 : 2} />
           </Link>
         </nav>

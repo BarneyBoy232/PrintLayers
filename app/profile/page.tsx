@@ -1,5 +1,5 @@
 'use client';
-import { User } from 'lucide-react';
+import { User, MapPin } from 'lucide-react';
 import Link from 'next/link';
 
 export default function ProfilePage() {
@@ -18,9 +18,16 @@ export default function ProfilePage() {
         
         <div className="space-y-8 text-left">
           <div className="p-6 md:p-8 bg-black/5 dark:bg-white/5 rounded-[2.5rem] border border-black/5 dark:border-white/5 shadow-inner">
+            <h4 className="font-black text-xl mb-4 flex items-center gap-2">
+              <MapPin className="text-emerald-500" size={20} /> Delivery Address
+            </h4>
+            <input type="text" placeholder="Start typing address..." className="w-full p-4 rounded-xl bg-black/3 dark:bg-white/3 outline-none font-bold text-sm border border-black/10 dark:border-white/10 shadow-sm" />
+          </div>
+
+          <div className="p-6 md:p-8 bg-black/5 dark:bg-white/5 rounded-[2.5rem] border border-black/5 dark:border-white/5 shadow-inner">
             <h4 className="font-black text-xl mb-3">Network Status</h4>
-            <p className="text-sm text-gray-500 mb-8 leading-relaxed max-w-2xl">You are currently using PrintLayers as a customer. Got hardware? Become a partner to receive printing jobs and earn money.</p>
-            <Link href="/partner" className="inline-block bg-orange-500 text-gray-950 px-10 py-5 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-orange-400 shadow-[0_0_20px_rgba(249,115,22,0.2)] active:scale-95 transition-all">Register a Printer</Link>
+            <p className="text-sm text-gray-500 mb-8 leading-relaxed max-w-2xl">You are currently using PrintLayers as a customer. Become a partner to receive printing jobs and earn money.</p>
+            <Link href="/partner" className="inline-block bg-orange-500 text-gray-950 px-10 py-5 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-orange-400 active:scale-95 transition-all shadow-lg">Register a Printer</Link>
           </div>
         </div>
       </div>

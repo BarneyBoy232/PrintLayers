@@ -1,10 +1,12 @@
 'use client';
 import { useState, useRef } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, Settings } from 'lucide-react';
 
 export default function AdjustPage() {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [weight, setWeight] = useState(0);
+  const [showConfig, setShowConfig] = useState(false);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -23,9 +25,36 @@ export default function AdjustPage() {
           <p className="text-gray-500 font-medium text-sm tracking-wide">Supports .STL, .3MF, .STEP</p>
         </div>
       ) : ( 
-        <div className="flex-1 flex flex-col items-center justify-center bg-black/3 dark:bg-white/3 rounded-[3rem] border border-black/10 dark:border-white/10">
-          <h2 className="text-3xl font-black uppercase mb-4">{uploadedFile.name}</h2>
-          <button onClick={() => setUploadedFile(null)} className="px-6 py-3 bg-black/5 dark:bg-white/5 rounded-xl font-bold">Clear File</button>
+        <div className="w-full flex-1 min-h-125 bg-black/3 dark:bg-white/3 backdrop-blur-2xl rounded-[3rem] overflow-hidden relative border border-black/10 dark:border-white/10 shadow-2xl flex flex-col">
+          {!showConfig ? (
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-12">
+              <div className="w-24 h-24 bg-orange-500/10 rounded-3xl flex items-center justify-center mb-8 animate-pulse border border-orange-500/20">
+                <Settings className="w-12 h-12 text-orange-400" />
+              </div>
+              <h2 className="text-3xl font-black tracking-tighter uppercase mb-3">{uploadedFile.name}</h2>
+              <div className="mt-10 flex flex-col sm:flex-row gap-4 w-full max-w-md">
+                <button onClick={() => setShowConfig(true)} className="flex-1 bg-orange-500 hover:bg-orange-400 text-gray-950 py-4 rounded-2xl font-black transition-all shadow-lg active:scale-95">Configure Print</button>
+                <button onClick={() => setUploadedFile(null)} className="flex-1 bg-black/5 dark:bg-white/5 py-4 rounded-2xl font-bold transition-all border border-black/10 dark:border-white/10 active:scale-95">Clear File</button>
+              </div>
+            </div>
+          ) : (
+            <div className="absolute inset-0 p-6 md:p-8 flex flex-col md:flex-row gap-6 md:gap-8 bg-white/60 dark:bg-black/40 backdrop-blur-xl">
+               <div className="flex-1 rounded-4xl bg-linear-to-br from-orange-500/10 to-transparent border border-black/5 dark:border-white/5 flex items-center justify-center text-orange-500/50 font-black text-2xl tracking-widest shadow-inner">
+                3D PREVIEW ENGINE
+              </div>
+              <div className="w-full md:w-96 flex flex-col space-y-6">
+                <h3 className="font-black uppercase text-xs tracking-[0.2em] border-b border-black/5 dark:border-white/5 pb-3 flex items-center gap-2">
+                  <Settings size={14} className="text-orange-500" /> Print Config
+                </h3>
+                <div>
+                  <label className="block text-[10px] font-black text-gray-500 uppercase mb-2">Estimated Weight (g)</label>
+                  <input type="number" value={weight} onChange={(e) => setWeight(Number(e.target.value))} className="w-full bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-xl p-4 font-bold outline-none focus:border-orange-500" />
+                </div>
+                <button className="w-full bg-orange-500 text-gray-950 py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-orange-400 transition-all active:scale-95 shadow-lg">Add to Cart</button>
+                <button onClick={() => setShowConfig(false)} className="text-xs font-black text-gray-500 uppercase tracking-widest text-center mt-2 hover:text-orange-500 transition-colors">Back to Viewer</button>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

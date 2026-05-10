@@ -20,8 +20,8 @@ export default function SearchPage() {
             <input type="text" placeholder="e.g. GoPro Mount..." className="w-full pl-16 pr-6 py-6 rounded-2xl bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/5 outline-none font-bold text-lg focus:border-orange-500 transition-all shadow-inner" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
           </div>
           <div className="flex flex-col sm:flex-row gap-4">
-            <button onClick={() => window.open(`https://makerworld.com/en/search/models?keyword=${encodeURIComponent(searchQuery)}`)} className="flex-1 py-5 bg-orange-500/10 text-orange-500 border border-orange-500/20 font-black text-xs uppercase tracking-widest rounded-2xl hover:bg-orange-500/20 transition-all active:scale-95">MakerWorld</button>
-            <button onClick={() => window.open(`https://www.thingiverse.com/search?q=${encodeURIComponent(searchQuery)}`)} className="flex-1 py-5 bg-blue-500/10 text-blue-500 border border-blue-500/20 font-black text-xs uppercase tracking-widest rounded-2xl hover:bg-blue-500/20 transition-all active:scale-95">Thingiverse</button>
+            <button onClick={() => window.open(`https://makerworld.com/en/search/models?keyword=${encodeURIComponent(searchQuery)}`)} className="flex-1 py-5 bg-orange-500/10 text-orange-500 border border-orange-500/20 font-black text-xs uppercase tracking-widest rounded-2xl hover:bg-orange-500/20 transition-all active:scale-95 shadow-inner">MakerWorld</button>
+            <button onClick={() => window.open(`https://www.thingiverse.com/search?q=${encodeURIComponent(searchQuery)}`)} className="flex-1 py-5 bg-blue-500/10 text-blue-500 border border-blue-500/20 font-black text-xs uppercase tracking-widest rounded-2xl hover:bg-blue-500/20 transition-all active:scale-95 shadow-inner">Thingiverse</button>
           </div>
         </div>
       </div>
