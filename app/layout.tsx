@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-// @ts-expect-error - CSS side-effect imports sometimes lack type declarations in specific TS configs
+// @ts-expect-error - Suppresses local VS Code TS errors for CSS imports without breaking the build
 import './globals.css';
 import ClientWrapper from './ClientWrapper';
 
