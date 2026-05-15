@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import ClientWrapper from './ClientWrapper';
+import ClientWrapper from './ClientWrapper'; // <-- Fixed to ./
 
 export const metadata: Metadata = {
   title: 'PrintLayers',
