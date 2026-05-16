@@ -1,17 +1,34 @@
 'use client';
 import { useState } from 'react';
-import { BarChart3, ListOrdered, Printer, Users } from 'lucide-react';
+import { BarChart3, ListOrdered, Printer, Users, Lock } from 'lucide-react';
+import { useApp } from '../ClientWrapper';
 
 export default function AdminPage() {
+  const { user } = useApp();
   const [adminTab, setAdminTab] = useState('overview');
+
+  const INITIAL_ADMINS = ['ethan.barnacoat@gmail.com'];
+  const isAdmin = user?.email && INITIAL_ADMINS.includes(user.email);
+
+  if (!isAdmin) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center animate-in fade-in">
+        <div className="bg-black/5 p-12 rounded-[3rem] border border-black/10 text-center max-w-md">
+          <Lock size={48} className="mx-auto mb-6 text-red-500" />
+          <h2 className="text-2xl font-black uppercase mb-2 text-gray-900 dark:text-white">Access Denied</h2>
+          <p className="text-gray-500 font-medium">This dashboard is restricted to platform administrators.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1 flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="w-full bg-black/3 dark:bg-white/3 backdrop-blur-2xl p-10 md:p-12 rounded-[3rem] shadow-2xl border border-black/10 dark:border-white/10 text-left min-h-[70vh]">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
           <div>
-            <h2 className="text-4xl font-black tracking-tight uppercase mb-2">Admin Dashboard</h2>
-            <p className="text-gray-500">Platform control center and network health.</p>
+            <h2 className="text-4xl font-black tracking-tight uppercase mb-2 text-gray-900 dark:text-white">Admin Dashboard</h2>
+            <p className="text-gray-500 font-medium">Platform control center and network health.</p>
           </div>
           
           <div className="flex flex-wrap gap-2 p-2 bg-black/5 dark:bg-white/5 rounded-2xl border border-black/5 dark:border-white/5 shadow-inner">

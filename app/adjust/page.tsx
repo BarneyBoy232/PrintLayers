@@ -1,8 +1,12 @@
 'use client';
 import { useState, useRef } from 'react';
 import { Plus, Settings } from 'lucide-react';
+import { useApp } from '../ClientWrapper';
+import { useRouter } from 'next/navigation';
 
 export default function AdjustPage() {
+  const { setCart, cart } = useApp();
+  const router = useRouter();
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [weight, setWeight] = useState(0);
@@ -13,19 +17,34 @@ export default function AdjustPage() {
     if (file) setUploadedFile(file);
   };
 
+  const addToCart = () => {
+    if (!uploadedFile) return;
+    const newItem = {
+      id: Math.random().toString(36).substr(2, 9),
+      name: uploadedFile.name,
+      source: 'Direct Upload',
+      price: 'Pending',
+      material: 'Unassigned',
+      color: 'Unassigned',
+      weight: weight
+    };
+    setCart([...cart, newItem]);
+    router.push('/cart');
+  };
+
   return (
     <div className="flex-1 flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-500">
       {!uploadedFile ? (
-        <div onClick={() => fileInputRef.current?.click()} className="flex-1 group w-full border-[3px] border-dashed border-black/10 dark:border-white/10 rounded-[3rem] bg-black/5 dark:bg-white/5 backdrop-blur-2xl flex flex-col items-center justify-center p-12 text-center cursor-pointer hover:border-orange-500/50 transition-all duration-500">
+        <div onClick={() => fileInputRef.current?.click()} className="flex-1 group w-full border-[3px] border-dashed border-black/10 dark:border-white/10 rounded-[3rem] bg-black/3 dark:bg-white/3 backdrop-blur-2xl flex flex-col items-center justify-center p-12 text-center cursor-pointer hover:border-orange-500/50 transition-all duration-500">
           <input type="file" ref={fileInputRef} className="hidden" accept=".stl,.3mf,.step,.stp" onChange={handleFileUpload} />
           <div className="w-28 h-28 bg-black/3 dark:bg-white/3 rounded-4xl flex items-center justify-center mb-8 border border-black/5 dark:border-white/5 group-hover:scale-110 group-hover:bg-orange-500/20 group-hover:border-orange-500/30 transition-all duration-500 shadow-inner">
             <Plus size={48} className="text-gray-500 group-hover:text-orange-500 transition-colors" />
           </div>
-          <h3 className="text-3xl font-black mb-3 uppercase tracking-tighter group-hover:text-orange-500 transition-colors">Drop 3D File Here</h3>
+          <h3 className="text-3xl font-black mb-3 uppercase tracking-tighter text-gray-900 dark:text-white group-hover:text-orange-500">Drop 3D File Here</h3>
           <p className="text-gray-500 font-medium text-sm tracking-wide">Supports .STL, .3MF, .STEP</p>
         </div>
       ) : ( 
-        <div className="w-full flex-1 min-h-125 bg-black/3 dark:bg-white/3 backdrop-blur-2xl rounded-[3rem] overflow-hidden relative border border-black/10 dark:border-white/10 shadow-2xl flex flex-col">
+        <div className="w-full flex-1 min-h-125 bg-black/3 dark:bg-white/3 backdrop-blur-2xl rounded-[3rem] overflow-hidden relative border border-black/10 dark:border-white/10 shadow-2xl flex flex-col text-gray-900 dark:text-white">
           {!showConfig ? (
             <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-12">
               <div className="w-24 h-24 bg-orange-500/10 rounded-3xl flex items-center justify-center mb-8 animate-pulse border border-orange-500/20">
@@ -50,7 +69,7 @@ export default function AdjustPage() {
                   <label className="block text-[10px] font-black text-gray-500 uppercase mb-2">Estimated Weight (g)</label>
                   <input type="number" value={weight} onChange={(e) => setWeight(Number(e.target.value))} className="w-full bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-xl p-4 font-bold outline-none focus:border-orange-500" />
                 </div>
-                <button className="w-full bg-orange-500 text-gray-950 py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-orange-400 transition-all active:scale-95 shadow-lg">Add to Cart</button>
+                <button onClick={addToCart} className="w-full bg-orange-500 text-gray-950 py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-orange-400 transition-all active:scale-95 shadow-lg">Add to Cart</button>
                 <button onClick={() => setShowConfig(false)} className="text-xs font-black text-gray-500 uppercase tracking-widest text-center mt-2 hover:text-orange-500 transition-colors">Back to Viewer</button>
               </div>
             </div>
