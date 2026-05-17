@@ -11,15 +11,18 @@ export default function SignInPage() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isSignUpMode, setIsSignUpMode] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
+  const [authSubmitting, setAuthSubmitting] = useState(false);
 
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!supabase) return;
 
     setAuthError(null);
+    setAuthSubmitting(true);
 
     if (isSignUpMode && password !== confirmPassword) {
       setAuthError("Passwords do not match.");
+      setAuthSubmitting(false);
       return;
     }
 
@@ -35,6 +38,26 @@ export default function SignInPage() {
     } catch (err: unknown) {
       const errorMsg = err instanceof Error ? err.message : "Authentication error occurred.";
       setAuthError(errorMsg);
+    } finally {
+      setAuthSubmitting(false);
+    }
+  };
+
+  const handleOAuthSignIn = async () => {
+    if (!supabase) return;
+    setAuthError(null);
+    setAuthSubmitting(true);
+    
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({ 
+        provider: 'google', 
+        options: { redirectTo: window.location.origin }
+      });
+      if (error) throw error;
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : "Google OAuth failed.";
+      setAuthError(errorMsg);
+      setAuthSubmitting(false);
     }
   };
 
@@ -45,6 +68,7 @@ export default function SignInPage() {
     glassBorder: isDarkMode ? 'border-white/10' : 'border-black/10',
     glassInnerBorder: isDarkMode ? 'border-white/5' : 'border-black/5',
     itemBg: isDarkMode ? 'bg-white/5' : 'bg-black/5',
+    itemHover: isDarkMode ? 'hover:bg-white/10' : 'hover:bg-black/10',
   };
 
   return (
@@ -66,10 +90,19 @@ export default function SignInPage() {
           <input type="email" placeholder="Email Address" required value={email} onChange={e => setEmail(e.target.value)} className={`w-full px-5 py-4 rounded-2xl ${t.itemBg} border ${t.glassInnerBorder} outline-none focus:border-orange-500 text-sm font-medium transition-all shadow-inner ${t.heading}`} />
           <input type="password" placeholder="Password" required value={password} onChange={e => setPassword(e.target.value)} className={`w-full px-5 py-4 rounded-2xl ${t.itemBg} border ${t.glassInnerBorder} outline-none focus:border-orange-500 text-sm font-medium transition-all shadow-inner ${t.heading}`} />
           {isSignUpMode && <input type="password" placeholder="Confirm Password" required value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className={`w-full px-5 py-4 rounded-2xl ${t.itemBg} border ${t.glassInnerBorder} outline-none focus:border-orange-500 text-sm font-medium transition-all shadow-inner ${t.heading}`} />}
-          <button type="submit" className="w-full bg-orange-500 text-gray-950 py-4.5 rounded-2xl font-black hover:bg-orange-400 transition-all uppercase tracking-widest text-xs mt-2 shadow-lg active:scale-95">
-            {isSignUpMode ? 'Sign Up' : 'Sign In'}
+          <button type="submit" disabled={authSubmitting} className="w-full bg-orange-500 text-gray-950 py-4.5 rounded-2xl font-black hover:bg-orange-400 transition-all uppercase tracking-widest text-xs mt-2 shadow-lg active:scale-95 disabled:opacity-50">
+            {authSubmitting ? '...' : (isSignUpMode ? 'Sign Up' : 'Sign In')}
           </button>
         </form>
+
+        <button 
+          onClick={handleOAuthSignIn} 
+          disabled={authSubmitting} 
+          className={`mt-4 w-full flex items-center justify-center gap-3 ${t.itemBg} border ${t.glassInnerBorder} py-4 rounded-2xl font-bold ${t.heading} ${t.itemHover} transition-all active:scale-95 text-sm disabled:opacity-50`}
+        >
+          Continue with Google
+        </button>
+
         <div className={`mt-8 pt-6 border-t ${t.glassInnerBorder}`}>
           <button onClick={() => setIsSignUpMode(!isSignUpMode)} className="text-xs font-black text-orange-500 uppercase tracking-wider transition-colors hover:text-orange-400">
             {isSignUpMode ? 'Back to Sign In' : "Join Network"}
