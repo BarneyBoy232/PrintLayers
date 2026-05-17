@@ -1,37 +1,41 @@
 'use client';
+
 import { useState } from 'react';
-import { BarChart3, ListOrdered, Printer, Users, Lock } from 'lucide-react';
+import { BarChart3, ListOrdered, Printer, Users } from 'lucide-react';
 import { useApp } from '../ClientWrapper';
 
 export default function AdminPage() {
-  const { user } = useApp();
+  const { user, admins, isDarkMode } = useApp();
   const [adminTab, setAdminTab] = useState('overview');
 
-  const INITIAL_ADMINS = ['ethan.barnacoat@gmail.com'];
-  const isAdmin = user?.email && INITIAL_ADMINS.includes(user.email);
+  const t = {
+    heading: isDarkMode ? 'text-white' : 'text-gray-900',
+    muted: isDarkMode ? 'text-gray-400' : 'text-gray-500',
+    glassBg: isDarkMode ? 'bg-white/3' : 'bg-black/3',
+    glassBorder: isDarkMode ? 'border-white/10' : 'border-black/10',
+    glassInnerBorder: isDarkMode ? 'border-white/5' : 'border-black/5',
+    itemBg: isDarkMode ? 'bg-white/5' : 'bg-black/5',
+  };
 
-  if (!isAdmin) {
+  if (!user || !admins.includes(user.email ?? '')) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center animate-in fade-in">
-        <div className="bg-black/5 p-12 rounded-[3rem] border border-black/10 text-center max-w-md">
-          <Lock size={48} className="mx-auto mb-6 text-red-500" />
-          <h2 className="text-2xl font-black uppercase mb-2 text-gray-900 dark:text-white">Access Denied</h2>
-          <p className="text-gray-500 font-medium">This dashboard is restricted to platform administrators.</p>
-        </div>
+      <div className="flex-1 flex flex-col items-center justify-center p-12 text-center animate-in fade-in">
+        <h2 className={`text-3xl font-black tracking-tight uppercase mb-4 text-red-500`}>Access Denied</h2>
+        <p className={`${t.muted}`}>Admin credentials required to view this panel.</p>
       </div>
     );
   }
 
   return (
     <div className="flex-1 flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="w-full bg-black/3 dark:bg-white/3 backdrop-blur-2xl p-10 md:p-12 rounded-[3rem] shadow-2xl border border-black/10 dark:border-white/10 text-left min-h-[70vh]">
+      <div className={`w-full ${t.glassBg} backdrop-blur-2xl p-10 md:p-12 rounded-[3rem] shadow-2xl border ${t.glassBorder} text-left min-h-[70vh]`}>
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
           <div>
-            <h2 className="text-4xl font-black tracking-tight uppercase mb-2 text-gray-900 dark:text-white">Admin Dashboard</h2>
-            <p className="text-gray-500 font-medium">Platform control center and network health.</p>
+            <h2 className={`text-4xl font-black tracking-tight uppercase mb-2 ${t.heading}`}>Admin Dashboard</h2>
+            <p className={`${t.muted}`}>Platform control center and network health.</p>
           </div>
           
-          <div className="flex flex-wrap gap-2 p-2 bg-black/5 dark:bg-white/5 rounded-2xl border border-black/5 dark:border-white/5 shadow-inner">
+          <div className={`flex flex-wrap gap-2 p-2 ${t.itemBg} rounded-2xl border ${t.glassInnerBorder} shadow-inner`}>
             {[
               { id: 'overview', icon: <BarChart3 size={16} />, label: 'Overview' },
               { id: 'orders', icon: <ListOrdered size={16} />, label: 'Orders' },
@@ -52,22 +56,22 @@ export default function AdminPage() {
         <div className="flex-1">
           {adminTab === 'overview' && (
              <div className="grid md:grid-cols-3 gap-6 animate-in fade-in">
-               <div className="p-8 bg-black/5 dark:bg-white/5 rounded-4xl border border-black/5 dark:border-white/5 text-center shadow-inner">
-                 <p className="text-xs font-black uppercase tracking-widest text-gray-500 mb-2">Total Volume (30d)</p>
+               <div className={`p-8 ${t.itemBg} rounded-4xl border ${t.glassInnerBorder} text-center shadow-inner`}>
+                 <p className={`text-xs font-black uppercase tracking-widest ${t.muted} mb-2`}>Total Volume (30d)</p>
                  <p className="text-4xl font-black text-emerald-500 tracking-tighter">$0.00</p>
                </div>
-               <div className="p-8 bg-black/5 dark:bg-white/5 rounded-4xl border border-black/5 dark:border-white/5 text-center shadow-inner">
-                 <p className="text-xs font-black uppercase tracking-widest text-gray-500 mb-2">Platform Fees</p>
+               <div className={`p-8 ${t.itemBg} rounded-4xl border ${t.glassInnerBorder} text-center shadow-inner`}>
+                 <p className={`text-xs font-black uppercase tracking-widest ${t.muted} mb-2`}>Platform Fees</p>
                  <p className="text-4xl font-black text-purple-500 tracking-tighter">$0.00</p>
                </div>
-               <div className="p-8 bg-black/5 dark:bg-white/5 rounded-4xl border border-black/5 dark:border-white/5 text-center shadow-inner">
-                 <p className="text-xs font-black uppercase tracking-widest text-gray-500 mb-2">Pending Payouts</p>
+               <div className={`p-8 ${t.itemBg} rounded-4xl border ${t.glassInnerBorder} text-center shadow-inner`}>
+                 <p className={`text-xs font-black uppercase tracking-widest ${t.muted} mb-2`}>Pending Payouts</p>
                  <p className="text-4xl font-black text-orange-500 tracking-tighter">$0.00</p>
                </div>
              </div>
           )}
           {adminTab !== 'overview' && (
-            <div className="h-64 flex flex-col items-center justify-center text-gray-500 italic font-bold">
+            <div className={`h-64 flex flex-col items-center justify-center ${t.muted} italic font-bold`}>
               No active {adminTab} data found.
             </div>
           )}
