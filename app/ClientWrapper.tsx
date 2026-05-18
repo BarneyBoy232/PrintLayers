@@ -102,13 +102,11 @@ export function AddressAutocomplete({
   placeholder, 
   isLoaded, 
   onPlaceSelected, 
-  onChangeText 
 }: { 
   t: ThemeClasses; 
   placeholder: string; 
   isLoaded: boolean; 
   onPlaceSelected?: (address: string) => void; 
-  onChangeText?: (text: string) => void; 
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const autocompleteRef = useRef<GoogleAutocomplete | null>(null);
@@ -132,26 +130,27 @@ export function AddressAutocomplete({
       if (callbackRef.current && place?.formatted_address) {
         callbackRef.current(place.formatted_address);
         if (inputRef.current) inputRef.current.value = place.formatted_address;
-        if (onChangeText) onChangeText(place.formatted_address);
       }
     });
-  }, [isLoaded, onChangeText]);
+  }, [isLoaded]);
 
   return (
     <input 
       ref={inputRef} 
       type="text" 
       placeholder={placeholder} 
-      onChange={(e) => onChangeText && onChangeText(e.target.value)}
+      // BUG FIX: Removed onChange to stop the app from saving every single keystroke,
+      // which caused the app to constantly re-render and steal the typing cursor.
       className={`w-full bg-black/5 dark:bg-white/5 border ${t.glassInnerBorder} rounded-xl p-4 text-sm font-bold ${t.heading} outline-none focus:border-orange-500 transition-colors`} 
     />
   );
 }
 
 const INITIAL_ADMINS = ['ethan.barnacoat@gmail.com'];
-const SUPABASE_URL = 'https://xijtyfewiimfcwoodxlq.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhpanR5ZmV3aWltZmN3b29keGxxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY0NzA4ODQsImV4cCI6MjA4MjA0Njg4NH0.tc4usglFmTnLKJSEfw_KAdHCiltpykUtaBo9bhppdjw';
-const GOOGLE_MAPS_API_KEY = 'AIzaSyAphDjU-emPqD24ozf1RDG0u8L3DS-aXps';
+// Environment Variables securely read from Vercel's Environment tab
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+const SUPABASE_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
 
 export default function ClientWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
